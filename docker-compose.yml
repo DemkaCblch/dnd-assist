@@ -63,7 +63,7 @@ rabbitmq:
       retries: 3
       start_period: 30s
 
-  redis:
+redis:
     image: redis:7.4-alpine
     container_name: redis
     hostname: redis
@@ -85,7 +85,7 @@ rabbitmq:
       retries: 3
       start_period: 30s
 
-  redis-commander:
+redis-commander:
     container_name: redis-commander
     hostname: redis-commander
     image: ghcr.io/joeferner/redis-commander:latest
@@ -102,7 +102,7 @@ rabbitmq:
     depends_on:
       - redis
 
-  django:
+django:
     build: ./django
     image: dnd-assist-django:latest
     container_name: django
