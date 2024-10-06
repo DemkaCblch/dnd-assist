@@ -39,6 +39,68 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+      
+rabbitmq:
+    image: rabbitmq:3.10-management-alpine
+    container_name: rabbitmq
+    hostname: rabbitmq
+    restart: always
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
+    volumes:
+      - /usr/dnd-assist/rabbitmq:/var/lib/rabbitmq
+    ports:
+      - ${RABBITMQ_WEB_UI_PORT}:15672
+      - ${RABBITMQ_PORT}:5672
+    networks:
+      - gateway
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl start_app && rabbitmqctl status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis
+    hostname: redis
+    restart: always
+    environment:
+      - REDIS_PASS=${REDIS_PASS}
+      - REDIS_MAXMEMORY_POLICY="allkeys-lru"
+      - REDIS_MAXMEMORY="${REDIS_MAXMEMORY}"
+    volumes:
+      - /usr/dnd-assist/redis:/data
+    ports:
+      - ${REDIS_PORT}:6379
+    networks:
+      - gateway
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: ghcr.io/joeferner/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+      - HTTP_USER=${REDIS_COMMANDER_USER}
+      - HTTP_PASSWORD=${REDIS_COMMANDER_PASS}
+    ports:
+      - "${REDIS_COMMANDER_PORT}:8081"
+    user: redis
+    networks:
+      - gateway
+    depends_on:
+      - redis
 
   django:
     build: ./django
