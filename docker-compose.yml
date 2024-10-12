@@ -1,121 +1,117 @@
 services:
+
   nginx:
     build: ./nginx
-    image: dnd-assist-nginx:latest
+    image: nginx:latest
     container_name: nginx
-    networks:
-      - gateway
     ports:
-      - '${NGINX_HTTP_PORT}:80'
-      - '${NGINX_HTTPS_PORT}:443'
+      - '80:80'
     restart: always
     healthcheck:
-      test: ["CMD", "service", "nginx", "status"]
+      test: ['CMD', 'service', 'nginx', 'status']
       interval: 1m30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
   psql:
-    container_name: psql
     build: ./psql
-    image: dnd-assist-psql:latest
+    image: postgres
+    container_name: psql
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      PGDATA: "/var/lib/postgresql/data/pgdata"
-    volumes:
-      - /usr/dnd-assist/db-init:/docker-entrypoint-initdb.d
-      - /usr/dnd-assist/db:/var/lib/postgresql/data
+      POSTGRES_DB: dnd-assist
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      PGDATA: /var/lib/postgresql/data/pgdata
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - '5432:5432'
     restart: always
-    networks:
-      - gateway
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      test: [ 'CMD-SHELL', 'pg_isready -U admin -d dnd-assist' ]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-      
-rabbitmq:
+    shm_size: 128mb
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:7.2
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dndassist@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    restart: always
+
+  rabbitmq:
     image: rabbitmq:3.10-management-alpine
     container_name: rabbitmq
     hostname: rabbitmq
     restart: always
     environment:
-      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
-      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit log_levels [{connection,error},{default,error}] disk_free_limit 2147483648
     volumes:
       - /usr/dnd-assist/rabbitmq:/var/lib/rabbitmq
     ports:
-      - ${RABBITMQ_WEB_UI_PORT}:15672
-      - ${RABBITMQ_PORT}:5672
+      - '15672:15672'
     networks:
       - gateway
     healthcheck:
-      test: ["CMD-SHELL", "rabbitmqctl start_app && rabbitmqctl status"]
+      test: ['CMD-SHELL', 'rabbitmqctl start_app && rabbitmqctl status']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
 
-redis:
+  redis:
     image: redis:7.4-alpine
     container_name: redis
     hostname: redis
     restart: always
     environment:
-      - REDIS_PASS=${REDIS_PASS}
-      - REDIS_MAXMEMORY_POLICY="allkeys-lru"
-      - REDIS_MAXMEMORY="${REDIS_MAXMEMORY}"
+      - REDIS_PASS=admin
     volumes:
       - /usr/dnd-assist/redis:/data
     ports:
-      - ${REDIS_PORT}:6379
+      - '6379:6379'
     networks:
       - gateway
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
 
-redis-commander:
-    container_name: redis-commander
-    hostname: redis-commander
-    image: ghcr.io/joeferner/redis-commander:latest
-    restart: always
-    environment:
-      - REDIS_HOSTS=local:redis:6379
-      - HTTP_USER=${REDIS_COMMANDER_USER}
-      - HTTP_PASSWORD=${REDIS_COMMANDER_PASS}
-    ports:
-      - "${REDIS_COMMANDER_PORT}:8081"
-    user: redis
-    networks:
-      - gateway
-    depends_on:
-      - redis
+  celery:
+      image: celery
+      container_name: celery
+      depends_on:
+        - redis
 
-django:
-    build: ./django
-    image: dnd-assist-django:latest
-    container_name: django
-    networks:
-      - gateway
-    ports:
-      - "${DJANGO_PORT}:8000"
+  swagger:
+    container_name: swagger
     restart: always
+    image: swaggerapi/swagger-ui:latest
+    ports:
+      - "8081:8081"
     environment:
-      - DJANGO_SETTINGS_MODULE=dnd-assist.settings
+      - API_URL=http://localhost:8080/api/v1/swagger/
+
+  django:
+    build: ./backend
+    container_name: django
+    ports:
+      - '8000:8000'
+    command: python backend/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/usr/src/app
     depends_on:
       - redis
       - psql
-      
+
 networks:
   gateway: {}
