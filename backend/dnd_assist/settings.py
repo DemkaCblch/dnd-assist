@@ -80,12 +80,14 @@ WSGI_APPLICATION = 'dnd_assist.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'dnd-assist',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': '127.0.0.1',
-        'PORT': '5433',
+        'USER': 'admin',
+        'PASSWORD': 'admin',
+        'HOST': 'psql',
+        #'HOST': '127.0.0.1' для локали,
+        #'PORT': '5433', для локали
+        'PORT': '5432',
     }
 }
 
