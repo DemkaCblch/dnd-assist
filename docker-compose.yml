@@ -49,6 +49,43 @@ services:
       - '5050:80'
     restart: always
 
+  mongo:
+    container_name: mongo
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+
+  mongo-express:
+    container_name: mongo-express
+    image: mongo-express
+    restart: always
+    ports:
+      - '8081:8081'
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongo:27017/
+      ME_CONFIG_BASICAUTH: false
+
+  minio:
+    image: minio/minio:latest
+    command: server --console-address ":9001" /data/
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: admin123
+    volumes:
+      - minio-storage:/data
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
   rabbitmq:
     image: rabbitmq:3.10-management-alpine
     container_name: rabbitmq
@@ -102,7 +139,7 @@ services:
     restart: always
     image: swaggerapi/swagger-ui:latest
     ports:
-      - "8081:8081"
+      - "8080:8080"
     environment:
       - API_URL=http://localhost:8080/api/v1/swagger/
 
@@ -121,6 +158,7 @@ services:
 volumes:
   db-data:
   pgadmin-data:
+  minio-storage:
 
 networks:
   gateway: {}

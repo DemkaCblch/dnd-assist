@@ -82,8 +82,28 @@ DATABASES = {
         #'HOST': '127.0.0.1' для локали,
         #'PORT': '5433', для локали
         'PORT': '5432',
+    },
+    'mongo': {
+        'ENGINE': 'djongo',
+        'NAME': 'your_mongo_db',
+        'ENFORCE_SCHEMA': False,
+        'CLIENT': {
+            'host': 'mongodb://mongo:27017',
+        }
     }
 }
+
+# Подключение MinIO
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = 'your_minio_access_key'
+AWS_SECRET_ACCESS_KEY = 'your_minio_secret_key'
+AWS_STORAGE_BUCKET_NAME = 'your_minio_bucket'
+AWS_S3_ENDPOINT_URL = 'http://localhost:9000'
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+AWS_S3_REGION_NAME = None
+
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
