@@ -1,13 +1,16 @@
-from django.urls import path
-from .views import *
-from .consumers import GameConsumer
+from django.urls import path, include, re_path
 
-websocket_urlpatterns = [
-    path('ws/game/<str:room_name>/', GameConsumer.as_asgi()),  # Путь для WebSocket
-]
+from . import consumers
+from .views import *
+from .consumers import *
+from djoser import views as djoser_views
+
 
 urlpatterns = [
-    path('api/register/', RegisterView.as_view(), name='register'),
-    path('api/login/', LoginView.as_view(), name='login'),
-    path('api/logout/', LogoutView.as_view(), name='logout'),
+    #Для регистрирования пользователя
+    path('api/auth/', include('djoser.urls')),
+    #Для захода в пользователя
+    re_path('api/auth/', include('djoser.urls.authtoken')),
+
+    path('api/create-character/', CreateCharacterAPIView.as_view(), name='create-character'),
 ]

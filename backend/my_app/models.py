@@ -56,17 +56,14 @@ class PlayerFigures(models.Model):
 
 
 class Character(models.Model):
+    id = models.AutoField(primary_key=True)
     character_name = models.CharField(max_length=100)
-    global_id = models.CharField(max_length=100, unique=True)
     status = models.CharField(max_length=50)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='characters')
 
-    def __str__(self):
-        return self.character_name
-
 
 class Stats(models.Model):
-    character = models.OneToOneField(Character, on_delete=models.CASCADE, related_name='stats')
+    id = models.AutoField(primary_key=True)
     hp = models.IntegerField()
     race = models.CharField(max_length=50)
     intelligence = models.IntegerField()
@@ -75,3 +72,4 @@ class Stats(models.Model):
     constitution = models.IntegerField()
     wisdom = models.IntegerField()
     charisma = models.IntegerField()
+    character = models.OneToOneField(Character, on_delete=models.CASCADE, related_name='stats')
