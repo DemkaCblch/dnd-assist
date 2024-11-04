@@ -35,8 +35,6 @@ INSTALLED_APPS = [
 WSGI_APPLICATION = 'dnd_assist.wsgi.application'
 ASGI_APPLICATION = 'dnd_assist.asgi.application'
 
-
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -76,7 +74,7 @@ DATABASES = {
         # 'HOST': '127.0.0.1' для локали,
         # 'PORT': '5433', для локали
         'PORT': '5432',
-    },
+    }
 }
 
 # Password validation

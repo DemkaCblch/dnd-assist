@@ -1,6 +1,3 @@
-from django.contrib.auth.models import User
-from django.db import models
-
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -11,6 +8,7 @@ class RoomsList(models.Model):
 
 class Room(models.Model):
     id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50)
     room_status = models.CharField(max_length=50)
     master = models.ForeignKey(User, on_delete=models.CASCADE, related_name='rooms')
     rooms_list = models.ForeignKey(RoomsList, on_delete=models.CASCADE, related_name='rooms')
@@ -43,9 +41,6 @@ class EntityFigures(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='entity_figures')
     picture_id = models.CharField(max_length=100)
     table = models.ForeignKey(Table, on_delete=models.CASCADE, related_name='entity_figures')
-
-    def __str__(self):
-        return f"Entity Figure {self.id} for User {self.user.username}"
 
 
 class PlayerFigures(models.Model):
