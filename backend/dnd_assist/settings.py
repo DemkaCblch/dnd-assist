@@ -77,6 +77,18 @@ DATABASES = {
     }
 }
 
+import mongoengine
+from mongoengine import connect
+
+connect(
+    db='DNDAssist',
+    username='admin',        # Укажите имя пользователя, если требуется аутентификация
+    password='admin',        # Укажите пароль, если требуется аутентификация
+    host='localhost',                # Укажите адрес сервера MongoDB
+    port=27017                       # Укажите порт MongoDB (по умолчанию 27017)
+)
+
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
