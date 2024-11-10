@@ -19,6 +19,7 @@ class Game(models.Model):
     room = models.OneToOneField(Room, on_delete=models.CASCADE, related_name='game')
 
 
+
 class Chat(models.Model):
     id = models.AutoField(primary_key=True)
     game = models.OneToOneField(Game, on_delete=models.CASCADE, related_name='chat')

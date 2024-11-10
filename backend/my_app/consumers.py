@@ -68,18 +68,31 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         # Получаем сообщение от WebSocket
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        data = json.loads(text_data)
+        action = data.get('action')  # Тип действия
+        message = data.get('message')
 
-        # Отправляем сообщение в группу комнаты
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message,
-                'username': self.scope["user"].username
-            }
-        )
+        # Обработка различных действий
+        if action == "send_message":
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                    'username': self.scope["user"].username
+                }
+            )
+        elif action == "start_game":
+            # Логика для обработки нажатия на кнопку
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'button_event',
+                    'username': self.scope["user"].username,
+                    'button_id': data.get('button_id')  # Идентификатор кнопки
+                }
+            )
+
 
     async def chat_message(self, event):
         # Отправляем сообщение обратно в WebSocket
