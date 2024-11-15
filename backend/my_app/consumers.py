@@ -25,39 +25,40 @@ class WSConsumer(WebsocketConsumer):
 from django.core.exceptions import ObjectDoesNotExist
 from my_app.models import Room  # Импортируйте модель комнаты
 
+
 class RoomConsumer(AsyncWebsocketConsumer):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.room_group_name = None
         self.room_id = None
+        self.current_turn = None  # Имя текущего игрока
+        self.players = []  # Список игроков в комнате
 
     async def connect(self):
-        # Проверка аутентификации пользователя
         if self.scope["user"].is_anonymous:
             await self.close()
             return
 
-        # Получаем ID комнаты из URL
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f'chat_{self.room_id}'
 
-        # Проверка существования комнаты с room_status "Waiting"
         try:
             room = await database_sync_to_async(Room.objects.get)(
                 id=self.room_id,
                 room_status="Waiting"
             )
         except ObjectDoesNotExist:
-            await self.close()  # Закрыть соединение, если комната не найдена или статус неверный
+            await self.close()
             return
 
-        # Присоединяемся к группе комнаты
+        if not self.scope["user"].is_staff:
+            self.players.append(self.scope["user"].username)
+
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
         )
-
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -65,15 +66,15 @@ class RoomConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        if self.scope["user"].username in self.players:
+            self.players.remove(self.scope["user"].username)
 
     async def receive(self, text_data):
-        # Получаем сообщение от WebSocket
         data = json.loads(text_data)
-        action = data.get('action')  # Тип действия
-        message = data.get('message')
+        action = data.get('action')
 
-        # Обработка различных действий
         if action == "send_message":
+            message = data.get('message')
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -82,25 +83,76 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     'username': self.scope["user"].username
                 }
             )
-        elif action == "start_game":
-            # Логика для обработки нажатия на кнопку
+
+        elif action == "start_game" and self.scope["user"].is_staff:
+            if self.players:
+                self.current_turn = self.players[0]
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'game_event',
+                        'message': f"Игра началась! Ход игрока {self.current_turn}.",
+                        'current_turn': self.current_turn
+                    }
+                )
+            else:
+                await self.send(text_data=json.dumps({
+                    'message': "Нельзя начать игру без игроков."
+                }))
+
+        elif action == "end_turn" and self.scope["user"].username == self.current_turn:
+            self.current_turn = "master"
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    'type': 'button_event',
-                    'username': self.scope["user"].username,
-                    'button_id': data.get('button_id')  # Идентификатор кнопки
+                    'type': 'game_event',
+                    'message': "Ход завершён. Мастер выбирает следующего игрока или забирает ход себе.",
+                    'current_turn': self.current_turn
                 }
             )
 
+        elif action == "next_turn" and self.scope["user"].is_staff:
+            next_player = data.get("next_player")
+            if next_player in self.players:
+                self.current_turn = next_player
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'game_event',
+                        'message': f"Ход передан игроку {self.current_turn}.",
+                        'current_turn': self.current_turn
+                    }
+                )
+            else:
+                await self.send(text_data=json.dumps({
+                    'message': f"Игрок {next_player} не найден в комнате."
+                }))
+
+        elif action == "take_turn" and self.scope["user"].is_staff:
+            self.current_turn = "master"
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'game_event',
+                    'message': "Мастер забрал ход себе.",
+                    'current_turn': self.current_turn
+                }
+            )
 
     async def chat_message(self, event):
-        # Отправляем сообщение обратно в WebSocket
         message = event['message']
         username = event['username']
         await self.send(text_data=json.dumps({
             'message': message,
             'username': username
+        }))
+
+    async def game_event(self, event):
+        message = event['message']
+        current_turn = event['current_turn']
+        await self.send(text_data=json.dumps({
+            'message': message,
+            'current_turn': current_turn
         }))
 
 
