@@ -20,31 +20,21 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'daphne',
     'django.contrib.staticfiles',
     'channels',
-    'my_app',
     'django.contrib.postgres',
     'rest_framework_swagger',
-<<<<<<< HEAD:backend/dnd_assist/settings.py
-    'rest_framework'
-=======
->>>>>>> front:backend/dnd-assist/settings.py
+    'rest_framework',
+    'storages',
+    'djoser',
+    'rest_framework.authtoken',
+    'my_app',
 ]
 
-ASGI_APPLICATION = 'my_app.asgi.application'
+WSGI_APPLICATION = 'dnd_assist.wsgi.application'
+ASGI_APPLICATION = 'dnd_assist.asgi.application'
 
-<<<<<<< HEAD:backend/dnd_assist/settings.py
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],  # Адрес и порт Redis
-        },
-    },
-}
-
-=======
->>>>>>> front:backend/dnd-assist/settings.py
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -73,65 +63,32 @@ TEMPLATES = [
     },
 ]
 
-# settings.py
-ASGI_APPLICATION = 'your_project_name.asgi.application'
-
 # Database
 DATABASES = {
     'default': {
-<<<<<<< HEAD:backend/dnd_assist/settings.py
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'dnd-assist',
         'USER': 'admin',
         'PASSWORD': 'admin',
-        'HOST': 'psql',
-        #'HOST': '127.0.0.1' для локали,
-        #'PORT': '5433', для локали
+        'HOST': '127.0.0.1',
+        # 'HOST': '127.0.0.1' для локали,
+        # 'PORT': '5433', для локали
         'PORT': '5432',
-    },
-    'mongo': {
-        'ENGINE': 'djongo',
-        'NAME': 'your_mongo_db',
-        'ENFORCE_SCHEMA': False,
-        'CLIENT': {
-            'host': 'mongodb://mongo:27017',
-        }
     }
 }
 
-# Подключение MinIO
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_ACCESS_KEY_ID = 'your_minio_access_key'
-AWS_SECRET_ACCESS_KEY = 'your_minio_secret_key'
-AWS_STORAGE_BUCKET_NAME = 'your_minio_bucket'
-AWS_S3_ENDPOINT_URL = 'http://localhost:9000'
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-AWS_S3_REGION_NAME = None
+import mongoengine
+from mongoengine import connect
+
+connect(
+    db='DNDAssist',
+    username='admin',        # Укажите имя пользователя, если требуется аутентификация
+    password='admin',        # Укажите пароль, если требуется аутентификация
+    host='localhost',                # Укажите адрес сервера MongoDB
+    port=27017                       # Укажите порт MongoDB (по умолчанию 27017)
+)
 
 
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-}
-
-=======
-        'ENGINE': 'django.db.backends.postgresql',  # Используется PostgreSQL
-        'NAME': 'postgres',  # Имя базы данных
-        'USER': 'postgres',  # Имя пользователя
-        'PASSWORD': 'postgres',  # Пароль пользователя
-        'HOST': 'pgdb',  # Наименование контейнера для базы данных в Docker Compose
-        'PORT': '5432',  # Порт базы данных
-    }
-}
-
->>>>>>> front:backend/dnd-assist/settings.py
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -179,4 +136,37 @@ CACHES = {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
     }
+}
+
+# Подключение MinIO
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_ACCESS_KEY_ID = 'admin'
+AWS_SECRET_ACCESS_KEY = 'admin123'
+AWS_STORAGE_BUCKET_NAME = 'dnd-assist-files'
+AWS_S3_ENDPOINT_URL = 'http://dnd-assist-minio-1:9000'  # или URL твоего MinIO сервера
+AWS_S3_REGION_NAME = ''
+AWS_S3_USE_SSL = False  # если MinIO работает без SSL, ставь False
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+
+MEDIA_URL = f'http://localhost:9000/{AWS_STORAGE_BUCKET_NAME}/'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],  # Адрес Redis
+        },
+    },
 }
