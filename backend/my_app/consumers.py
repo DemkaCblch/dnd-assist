@@ -62,10 +62,11 @@ class RoomConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        if self.room_group_name:  # Проверка, что группа существует
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
         if self.scope["user"].username in self.players:
             self.players.remove(self.scope["user"].username)
 

@@ -32,6 +32,6 @@ class RoomSerializer(serializers.ModelSerializer):
         # В этом месте можно добавить логику для установки статуса и пользователя
         # Предполагается, что master (пользователь) передается из request.user
         validated_data['master'] = self.context['request'].user
-        validated_data['room_status'] = 'waiting'  # или другой статус по умолчанию
+        validated_data['room_status'] = 'Waiting'  # или другой статус по умолчанию
         validated_data['rooms_list'] = RoomsList.objects.get(id=1)
         return super().create(validated_data)
