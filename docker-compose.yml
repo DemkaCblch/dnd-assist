@@ -23,9 +23,12 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       PGDATA: /var/lib/postgresql/data/pgdata
+<<<<<<< HEAD
     volumes:
       - ../init_db:/docker-entrypoint-initdb.d
       - db-data:/var/lib/postgresql/data
+=======
+>>>>>>> front
     ports:
       - '5432:5432'
     restart: always
@@ -41,14 +44,20 @@ services:
     container_name: pgadmin
     image: dpage/pgadmin4:7.2
     environment:
+<<<<<<< HEAD
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+=======
+      PGADMIN_DEFAULT_EMAIL: dndassist@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+>>>>>>> front
     ports:
       - '5050:80'
     restart: always
 
+<<<<<<< HEAD
   mongo:
     container_name: mongo
     image: mongo
@@ -90,6 +99,8 @@ services:
       timeout: 20s
       retries: 3
 
+=======
+>>>>>>> front
   rabbitmq:
     image: rabbitmq:3.10-management-alpine
     container_name: rabbitmq
@@ -143,7 +154,11 @@ services:
     restart: always
     image: swaggerapi/swagger-ui:latest
     ports:
+<<<<<<< HEAD
       - "8080:8080"
+=======
+      - "8081:8081"
+>>>>>>> front
     environment:
       - API_URL=http://localhost:8080/api/v1/swagger/
 
@@ -159,11 +174,14 @@ services:
       - redis
       - psql
 
+<<<<<<< HEAD
 volumes:
   db-data:
   pgadmin-data:
   minio-storage:
   mongodb:
 
+=======
+>>>>>>> front
 networks:
   gateway: {}

@@ -25,11 +25,15 @@ INSTALLED_APPS = [
     'my_app',
     'django.contrib.postgres',
     'rest_framework_swagger',
+<<<<<<< HEAD:backend/dnd_assist/settings.py
     'rest_framework'
+=======
+>>>>>>> front:backend/dnd-assist/settings.py
 ]
 
 ASGI_APPLICATION = 'my_app.asgi.application'
 
+<<<<<<< HEAD:backend/dnd_assist/settings.py
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -39,6 +43,8 @@ CHANNEL_LAYERS = {
     },
 }
 
+=======
+>>>>>>> front:backend/dnd-assist/settings.py
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -70,10 +76,10 @@ TEMPLATES = [
 # settings.py
 ASGI_APPLICATION = 'your_project_name.asgi.application'
 
-
 # Database
 DATABASES = {
     'default': {
+<<<<<<< HEAD:backend/dnd_assist/settings.py
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'dnd-assist',
         'USER': 'admin',
@@ -115,6 +121,17 @@ REST_FRAMEWORK = {
     ),
 }
 
+=======
+        'ENGINE': 'django.db.backends.postgresql',  # Используется PostgreSQL
+        'NAME': 'postgres',  # Имя базы данных
+        'USER': 'postgres',  # Имя пользователя
+        'PASSWORD': 'postgres',  # Пароль пользователя
+        'HOST': 'pgdb',  # Наименование контейнера для базы данных в Docker Compose
+        'PORT': '5432',  # Порт базы данных
+    }
+}
+
+>>>>>>> front:backend/dnd-assist/settings.py
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
