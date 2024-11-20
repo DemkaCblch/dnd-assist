@@ -18,13 +18,14 @@ function Navbar() {
         <Link to="/admin">
           <img src="/assets/icons/admin-icon.png" className="icon" /> Admin
         </Link>
+        <Link to="/characters"> Characters</Link>
         {isAuthenticated ? (
           <Link to="/logout">
-            <img src="/assets/icons/logout-icon.png" className="icon" /> Logout
+            <img src="/assets/icons/logout-icon.png" className="icon" /> Выйти
           </Link>
         ) : (
           <Link to="/login">
-            <img src="/assets/icons/login-icon.png" className="icon" /> Login
+            <img src="/assets/icons/login-icon.png" className="icon" /> Войти
           </Link>
         )}
         </div>

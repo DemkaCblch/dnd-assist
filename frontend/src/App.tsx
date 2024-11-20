@@ -1,5 +1,6 @@
 import Navbar from './components/Navbar';
 import useRoutes from './routes/routes';
+import Footer from './components/Footer';
 import './App.css'
 
 const App = () => {
@@ -9,7 +10,9 @@ const App = () => {
     <div className='Page'>
       <Navbar />
       {routes}
+      <Footer />
     </div>
+   
   )
 };
 

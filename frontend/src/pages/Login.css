@@ -4,6 +4,7 @@
     background-image: url('../../public/imgs/backart.png'); /* Укажи путь к твоему изображению */
     background-size: contain; /* Изображение будет покрывать весь фон */
     background-position: center; /* Центрируем изображение */
+    background-color: rgb(21, 21, 21);
     background-repeat: no-repeat;
     display: flex;
     justify-content: center;

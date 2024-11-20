@@ -1,0 +1,74 @@
+.header {
+    text-align: center;
+    padding: 2rem;
+    margin: 10px;
+  }
+  
+  .title {
+    font-size: 3rem;
+    font-family: 'Fantasy', serif;
+  }
+  
+  .description {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  .btn {
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .create-room {
+    background-color: #4CAF50;
+    color: white;
+  }
+  
+  .create-room:hover {
+    background: rgb(30, 196, 30, 0.7);
+    box-shadow: none;
+    position: relative;
+    top: 5px;
+  }
+  
+  .join-room {
+    background-color: #008CBA;
+    color: white;
+  }
+  
+  .join-room:hover {
+    background: rgb(30, 196, 30, 0.7);
+    box-shadow: none;
+    position: relative;
+    top: 5px;
+  }
+
+  .MainBase{
+    background: url('../../public/imgs/backgroundddd.jpg') no-repeat center center/cover;
+    padding: 0;
+    margin: 0;
+    height: calc(100vh - 60px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: #e8e0e0; /* Цвет текста */
+    text-align: center; /* Центровка текста */
+  }
+
+  .header{
+    background-color: rgba(0, 0, 0, 0.4);
+    border-style: solid;
+    border-radius: 30px;
+    border-width: 0;
+  }
