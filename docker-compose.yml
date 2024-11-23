@@ -14,22 +14,13 @@ services:
       retries: 3
       start_period: 40s
 
-  api:
-    build: ./frontend/docker_api
-    container_name: api_backend
-    ports:
-      - '4000:4000'
-    volumes:
-      - ./api:/app
-      - ./app/node_modules
-  client:
-    build: ./frontend/docker_client
-    container_name: client_frontend
+  fronted:
+    build: ./frontend
+    container_name: frontend
     ports:
       - '3000:3000'
     volumes:
       - ./client:/app
-      - ./app/node_modules
     stdin_open: true
     tty: true
 
@@ -183,6 +174,7 @@ volumes:
   pgadmin-data:
   minio-storage:
   mongodb:
+  app:
 
 networks:
   gateway: {}
