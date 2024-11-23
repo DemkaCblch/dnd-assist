@@ -4,12 +4,12 @@ import './Login.css'
 import React, { useState, FormEvent } from "react";
 const loginUser = async (username: string, password: string) => {
   try {
-    const response = await fetch("/api/auth/token/login/", {
+    const response = await fetch("http://127.0.0.1:8000/api/auth/token/login/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ password , username }),
     });
 
     if (!response.ok) {
@@ -41,7 +41,9 @@ const Login: React.FC = () => {
 
     const result = await loginUser(username, password);
     if (result.success) {
-      window.location.href = "/dashboard"; // Перенаправление после успешного входа
+      setAuth(true);
+      navigate(from, { replace: true }); // Перенаправление после успешного входа
+
     } else {
       setError(result.error || "Ошибка логина");
     }
