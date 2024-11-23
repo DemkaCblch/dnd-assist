@@ -18,7 +18,7 @@ const Chars:React.FC = () =>{
       }, []);
     const handleCreateCharacter = (newCharacter: Character) => {
         // Добавляем персонажа в базу данных и обновляем список
-        fetch("/api/characters", {
+        fetch("/api/create-character", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newCharacter),
