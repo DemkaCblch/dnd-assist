@@ -2,31 +2,13 @@ from channels.db import database_sync_to_async
 
 from my_app.models import *
 from my_app.mongo_models import *
-
-
-from my_app.models import Room, Character, Stats
+from mongoengine.errors import ValidationError
+from my_app.models import Room
 from my_app.mongo_models import (
     MGCharacter,
     MGStats,
     MGRoom,
 )
-from django.core.exceptions import ObjectDoesNotExist
-
-
-def test123(room_id):
-    # Получаем комнату из PostgreSQL
-    room = Room.objects.get(id=room_id)
-    # Создаем объект комнаты в MongoDB
-    mongo_room = MGRoom(
-        name=room.name,
-        room_status="in_progress",
-        master_id=str(room.master.id)
-    )
-    mongo_room.save()
-
-
-from bson import ObjectId
-from mongoengine.errors import ValidationError
 
 def transfer_game_data_to_mongodb(room_id):
     # Шаг 1: Получаем комнату по заданному ID
@@ -43,9 +25,10 @@ def transfer_game_data_to_mongodb(room_id):
 
         mongo_room = MGRoom(
             name=room.name,
-            room_status=room.room_status,
+            room_status="Game running",
             master_token=master_token,  # Токен мастера как строка
-            user_token=user_tokens  # Список токенов пользователей как строки
+            user_token=user_tokens,  # Список токенов пользователей как строки
+            current_move=master_token,
         )
         mongo_room.save()
         print(f"Room '{room.name}' migrated with ID {mongo_room.id}")
@@ -120,13 +103,3 @@ def transfer_game_data_to_mongodb(room_id):
             print(f"Error saving player figure '{player_figure.name}': {e}")
 
     print(f"Data migration for room {room_id} completed successfully!")
-
-
-
-@database_sync_to_async
-def get_room_master(room_id):
-    try:
-        room = Room.objects.get(id=room_id)
-        return room.master_token  # Возвращаем ID мастера комнаты
-    except Room.DoesNotExist:
-        return None  # В случае ошибки или если комната не найдена

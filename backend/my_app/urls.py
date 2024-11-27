@@ -17,6 +17,9 @@ urlpatterns = [
     # Создание персонажа
     path('api/create-character/', CreateCharacterAPIView.as_view(), name='create-character'),
 
+    # Закрытие комнаты
+    path('api/rooms/', GetRoomsAPIView.as_view(), name='close-room'),
+
     # Создание комнаты
     path('api/create-room/', CreateRoomAPIView.as_view(), name='create-room'),
 

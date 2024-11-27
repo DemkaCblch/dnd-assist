@@ -5,9 +5,6 @@ from mongoengine import (
     IntField,
     ListField,
     EmbeddedDocumentField,
-    ReferenceField,
-    CASCADE,
-    LazyReferenceField, ObjectIdField,
 )
 
 
@@ -39,7 +36,8 @@ class MGEntityFigures(Document):
     """Фигуры объектов на столе"""
     picture_id = StringField(max_length=100)
     table_id = IntField(required=True)  # Ссылка на стол (Room/Table)
-
+    posX = IntField()
+    posY = IntField()
     meta = {
         'collection': 'entity_figures'
     }
@@ -50,6 +48,8 @@ class MGPlayerFigures(Document):
     name = StringField(max_length=100)
     picture_id = StringField(max_length=100)
     table_id = IntField(required=True)  # Ссылка на стол (Room/Table)
+    posX = IntField()
+    posY = IntField()
     user_token = StringField(max_length=100)
     meta = {
         'collection': 'player_figures'
@@ -62,7 +62,7 @@ class MGRoom(Document):
     room_status = StringField(max_length=50)
     master_token = StringField(required=True)  # Ссылка на мастера по токену (строка)
     user_token = ListField(StringField(), default=[])  # Список токенов пользователей (строки)
-
+    current_move = StringField(max_length=100)
     meta = {
         'collection': 'rooms'
     }

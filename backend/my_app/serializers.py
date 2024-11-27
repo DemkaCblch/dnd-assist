@@ -22,17 +22,19 @@ class CharacterSerializer(serializers.ModelSerializer):
         stats_data = validated_data.pop('stats')
         user_token = self.context['request'].auth  # Извлекаем токен из заголовка
 
-        try:
-            user = user_token.user  # Получаем пользователя по токену
-        except AttributeError:
-            raise NotFound("User not found for the given token.")
-
         character = Character.objects.create(user_token=user_token, **validated_data)
         Stats.objects.create(character=character, **stats_data)
         return character
 
 
-class RoomSerializer(serializers.ModelSerializer):
+class GetRoomSerializer(serializers.ModelSerializer):
+    master_token_id = serializers.CharField(source='master_token.key', allow_null=True)
+
+    class Meta:
+        model = Room
+        fields = ['id', 'name', 'room_status', 'master_token_id']
+
+class CreateRoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ['id', 'name']

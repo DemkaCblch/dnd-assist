@@ -4,13 +4,14 @@ from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse, HttpResponseNotFound
 from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 
 from my_app.models import Room, Character, PlayerInRoom
-from my_app.serializers import CharacterSerializer, RoomSerializer, JoinRoomSerializer
+from my_app.serializers import CharacterSerializer, CreateRoomSerializer, JoinRoomSerializer, GetRoomSerializer
 
 
 def pageNotFound(request, exception):
@@ -26,7 +27,7 @@ class CreateCharacterAPIView(APIView):
         serializer = CharacterSerializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
-            character = serializer.save()  # Сохраняем персонажа
+            character = serializer.save()
             return Response({
                 'message': 'Character created successfully',
                 'character': CharacterSerializer(character).data
@@ -39,14 +40,11 @@ class CreateRoomAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = RoomSerializer(data=request.data, context={'request': request})
+        serializer = CreateRoomSerializer(data=request.data, context={'request': request})
 
         if serializer.is_valid():
             room = serializer.save()  # Создаем новую комнату
             print(f"Room created successfully: {room.name} (ID: {room.id})")
-
-            # Получаем channel_layer
-            channel_layer = get_channel_layer()
 
             # Подготовка данных для отправки в WebSocket
             room_data = {
@@ -55,19 +53,6 @@ class CreateRoomAPIView(APIView):
                 'status': room.room_status
             }
             print(f"Sending to channel group 'chat_{room.id}' with data: {room_data}")
-
-            try:
-                # Отправляем обновление в группу комнаты
-                async_to_sync(channel_layer.group_send)(
-                    f'chat_{room.id}',  # Динамическая группа для конкретной комнаты
-                    {
-                        'type': 'new_room_created',
-                        'room': room_data
-                    }
-                )
-                print("Message sent to WebSocket group successfully.")
-            except Exception as e:
-                print(f"Error sending message to WebSocket group: {e}")
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
@@ -117,6 +102,10 @@ class JoinRoomAPIView(APIView):
         return Response(status=200)
 
 
+class GetRoomsAPIView(ListAPIView):
+    queryset = Room.objects.all()
+    serializer_class = GetRoomSerializer
+
 
 class CloseRoomAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -146,17 +135,6 @@ class CloseRoomAPIView(APIView):
                 {'id': r.id, 'name': r.name, 'status': r.room_status}
                 for r in Room.objects.all()
             ]
-
-            channel_layer = get_channel_layer()
-
-            # Отправка обновления всем подключенным пользователям
-            async_to_sync(channel_layer.group_send)(
-                'room_updates',  # Название группы
-                {
-                    'type': 'update_rooms',
-                    'rooms': rooms
-                }
-            )
 
             return Response({'message': 'Room closed successfully.'}, status=status.HTTP_200_OK)
         except Room.DoesNotExist:
