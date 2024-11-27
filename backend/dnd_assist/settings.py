@@ -1,6 +1,9 @@
 from pathlib import Path
+from mongoengine import connect
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -67,7 +70,6 @@ TEMPLATES = [
     },
 ]
 
-# Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -75,21 +77,17 @@ DATABASES = {
         'USER': 'admin',
         'PASSWORD': 'admin',
         'HOST': '127.0.0.1',
-        # 'HOST': '127.0.0.1' для локали,
-        # 'PORT': '5433', для локали
         'PORT': '5432',
     }
 }
 
-import mongoengine
-from mongoengine import connect
 
 connect(
     db='DNDAssist',
-    username='admin',        # Укажите имя пользователя, если требуется аутентификация
-    password='admin',        # Укажите пароль, если требуется аутентификация
-    host='localhost',                # Укажите адрес сервера MongoDB
-    port=27017                       # Укажите порт MongoDB (по умолчанию 27017)
+    username='admin',
+    password='admin',
+    host='localhost',
+    port=27017
 )
 
 
@@ -123,7 +121,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Настройка Celery для работы с RabbitMQ
 CELERY_BROKER_URL = 'amqp://localhost'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'  # Хранение результатов в Redis
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
@@ -147,9 +145,9 @@ DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 AWS_ACCESS_KEY_ID = 'admin'
 AWS_SECRET_ACCESS_KEY = 'admin123'
 AWS_STORAGE_BUCKET_NAME = 'dnd-assist-files'
-AWS_S3_ENDPOINT_URL = 'http://dnd-assist-minio-1:9000'  # или URL твоего MinIO сервера
+AWS_S3_ENDPOINT_URL = 'http://dnd-assist-minio-1:9000'
 AWS_S3_REGION_NAME = ''
-AWS_S3_USE_SSL = False  # если MinIO работает без SSL, ставь False
+AWS_S3_USE_SSL = False
 AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 
@@ -170,7 +168,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],  # Адрес Redis
+            'hosts': [('127.0.0.1', 6379)],
         },
     },
 }

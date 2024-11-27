@@ -17,11 +17,15 @@ urlpatterns = [
     # Создание персонажа
     path('api/create-character/', CreateCharacterAPIView.as_view(), name='create-character'),
 
+    # Закрытие комнаты
+    path('api/rooms/', GetRoomsAPIView.as_view(), name='close-room'),
+
     # Создание комнаты
     path('api/create-room/', CreateRoomAPIView.as_view(), name='create-room'),
 
     # Подключение к комнате - реализовать (Возвращает, можно ли подключиться и изменяет статус игрока)
-    path('api/connect-room/<int:room_id>/', CreateRoomAPIView.as_view(), name='create-room'),
+    #Передача персонажа на каком буду играть
+    path('api/connect-room/<int:room_id>/', JoinRoomAPIView.as_view(), name='create-room'),
 
     # Закрытие комнаты
     path('api/close-room/<int:room_id>/', CloseRoomAPIView.as_view(), name='close-room'),
