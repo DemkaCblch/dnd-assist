@@ -5,6 +5,7 @@ import Login from '../pages/Login';
 import Admin from '../pages/Admin';
 import Logout from '../pages/Logout';
 import Chars from '../pages/Characters';
+import Lobby from '../pages/Lobby';
 
 export const useRoutes = () => {
 
@@ -18,6 +19,7 @@ export const useRoutes = () => {
       <Route element={<PrivateRoute />}>
         <Route path='/admin' element={<Admin />} />
         <Route path="/logout" element={<Logout />} />
+        <Route path="/lobby/:id" element={<Lobby />} />
       </Route>
 
     </Routes>
