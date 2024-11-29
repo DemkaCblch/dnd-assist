@@ -1,29 +1,52 @@
-import { createContext, useState } from "react";
+import { createContext, useState, useEffect } from "react";
 
 // Определяем тип контекста
 type AuthContextType = {
-  isAuthenticated: boolean; 
-  setAuth: (auth: boolean) => void; // функция для изменения значения isAuthenticated
+  isAuthenticated: boolean;
+  setAuth: (auth: boolean) => void;
+  logout: () => void; // Функция для выхода из системы
 };
 
-// Создаем контекст с типом AuthContextType и начальными значениями по умолчанию
+// Создаем контекст с начальными значениями по умолчанию
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
-  setAuth: () => { },
+  setAuth: () => {},
+  logout: () => {},
 });
 
-// Создаем компонент провайдера, который предоставляет данные контекста всем дочерним компонентам
-export const AuthProvider = ({ children }: { children: JSX.Element }) => {
-  // Используем хук useState для создания переменной isAuthenticated и функции setAuth для ее изменения
-  const [isAuthenticated, setAuth] = useState<boolean>(false);
-  
-  // Возвращаем контекст провайдера, передавая значения isAuthenticated и setAuth в качестве значения контекста
+// Провайдер авторизации
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  // Восстанавливаем авторизацию из localStorage при загрузке
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  // Функция для установки авторизации
+  const setAuth = (auth: boolean) => {
+    if (auth) {
+     // Замените на реальный токен
+    } else {
+      localStorage.removeItem("authToken");
+    }
+    setIsAuthenticated(auth);
+  };
+
+  // Функция для выхода
+  const logout = () => {
+    localStorage.removeItem("authToken");
+    setIsAuthenticated(false);
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setAuth }}>
+    <AuthContext.Provider value={{ isAuthenticated, setAuth, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export default AuthContext;
-

@@ -58,7 +58,7 @@ const Main = () => {
     const interval = setInterval(fetchRooms, 10000);
   
     return () => clearInterval(interval);
-  }, [rooms]);
+  }, []);
 
   const handleCreateRoom = () => {
     isAuthenticated ? console.log('Создать комнату') : navigate('/login');
@@ -86,9 +86,7 @@ const Main = () => {
       </div>
       <div className="rooms-list">
         <h2>Доступные комнаты:</h2>
-        {loading ? (
-          <p>Загрузка...</p>
-        ) : error ? (
+        {error ? (
           <p className="error">{error}</p>
         ) : rooms.length > 0 ? (
           <ul>
