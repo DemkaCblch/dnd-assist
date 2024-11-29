@@ -15,14 +15,14 @@ services:
       start_period: 40s
 
   fronted:
-    build: ./frontend
-    container_name: frontend
-    ports:
-      - '3000:3000'
+    build: ./fronted
+    environment:
+      REACT_APP_API_URL: "https://my_api"
+    expose:
+      - "3000"
+    restart: always
     volumes:
-      - ./client:/app
-    stdin_open: true
-    tty: true
+      - .:/app
 
   psql:
     build: ./psql
@@ -141,12 +141,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-
-  celery:
-      image: celery
-      container_name: celery
-      depends_on:
-        - redis
 
   swagger:
     container_name: swagger
