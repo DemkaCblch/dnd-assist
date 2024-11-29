@@ -1,38 +1,15 @@
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound
-
-from my_app.models import Room, Chat, Table, Dice, EntityFigures, PlayerFigures, Character, Stats
-
-
-class StatsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Stats
-        fields = ['hp', 'race', 'intelligence', 'strength', 'dexterity', 'constitution', 'wisdom', 'charisma']
-
-
-class CharacterSerializer(serializers.ModelSerializer):
-    stats = StatsSerializer()
-
-    class Meta:
-        model = Character
-        fields = ['character_name', 'status', 'stats']
-
-    def create(self, validated_data):
-        stats_data = validated_data.pop('stats')
-        user_token = self.context['request'].auth  # Извлекаем токен из заголовка
-
-        character = Character.objects.create(user_token=user_token, **validated_data)
-        Stats.objects.create(character=character, **stats_data)
-        return character
+from room.models import Room
+from user_profile.models import Character
 
 
 class GetRoomSerializer(serializers.ModelSerializer):
-    master_token_id = serializers.CharField(source='master_token.key', allow_null=True)
+    master_token = serializers.CharField(source='master_token.key', allow_null=True)
 
     class Meta:
         model = Room
-        fields = ['id', 'name', 'room_status', 'master_token_id']
+        fields = ['id', 'name', 'room_status', 'master_token']
 
 class CreateRoomSerializer(serializers.ModelSerializer):
     class Meta:

@@ -3,8 +3,8 @@ from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from rest_framework.authtoken.models import Token
-from my_app.models import PlayerInRoom, Room
-from my_app.utils import transfer_game_data_to_mongodb
+from game.utils import transfer_game_data_to_mongodb
+from room.models import Room, PlayerInRoom
 
 
 class RoomConsumer(AsyncWebsocketConsumer):
@@ -30,10 +30,10 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 return
 
             # Получаем токен мастера комнаты
-            master_token_id = await self.get_master_token(self.room_id)
+            master_token = await self.get_master_token(self.room_id)
 
             # Проверяем, является ли пользователь мастером
-            is_master = (token_key == master_token_id)
+            is_master = (token_key == master_token)
 
             # Добавляем пользователя в PlayerInRoom
             await self.add_player_to_room(user, token_key, self.room_id, is_master)
@@ -60,7 +60,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_master_token(self, room_id):
         room = Room.objects.get(id=room_id)
-        return room.master_token_id
+        return room.master_token
 
     @database_sync_to_async
     def add_player_to_room(self, user, token_key, room_id, is_master=False, character=None):

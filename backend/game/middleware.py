@@ -8,10 +8,10 @@ from channels.middleware import BaseMiddleware
 def get_user(token_key):
     try:
         token = Token.objects.get(key=token_key)
-        print(f"User found: {token.user}")  # Логируем найденного пользователя
+        print(f"User found: {token.user}")
         return token.user
     except Token.DoesNotExist:
-        print(f"Token not found for key: {token_key}")  # Логируем, если токен не найден
+        print(f"Token not found for key: {token_key}")
         return AnonymousUser()
 
 

@@ -32,7 +32,10 @@ INSTALLED_APPS = [
     'storages',
     'djoser',
     'rest_framework.authtoken',
-    'my_app',
+    'site_backend',
+    'game',
+    'room',
+    'user_profile'
 ]
 
 WSGI_APPLICATION = 'dnd_assist.wsgi.application'

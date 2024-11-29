@@ -1,14 +1,9 @@
-from channels.db import database_sync_to_async
-
-from my_app.models import *
-from my_app.mongo_models import *
 from mongoengine.errors import ValidationError
-from my_app.models import Room
-from my_app.mongo_models import (
-    MGCharacter,
-    MGStats,
-    MGRoom,
-)
+
+from game.models import EntityFigures, PlayerFigures
+from game.mongo_models import MGRoom, MGStats, MGCharacter, MGEntityFigures, MGPlayerFigures
+from room.models import Room
+
 
 def transfer_game_data_to_mongodb(room_id):
     # Шаг 1: Получаем комнату по заданному ID
@@ -70,7 +65,6 @@ def transfer_game_data_to_mongodb(room_id):
             print(f"Character '{character.character_name}' migrated with ID {mongo_character.id}")
         except Exception as e:
             print(f"Error saving character '{character.character_name}': {e}")
-
 
     # Шаг 4: Перенос фигур объектов (EntityFigures)
     entity_figures = EntityFigures.objects.filter(table__room=room)
