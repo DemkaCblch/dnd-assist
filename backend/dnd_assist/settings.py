@@ -70,7 +70,7 @@ DATABASES = {
         'NAME': 'dnd-assist',
         'USER': 'admin',
         'PASSWORD': 'admin',
-        'HOST': '127.0.0.1',
+        'HOST': 'psql',
         # 'HOST': '127.0.0.1' для локали,
         # 'PORT': '5433', для локали
         'PORT': '5432',
