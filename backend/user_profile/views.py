@@ -40,17 +40,11 @@ class GetCharacterAPIView(APIView):
 
 class CreateEntityAPIView(APIView):
     permission_classes = [IsAuthenticated]
-
     def post(self, request, *args, **kwargs):
         serializer = EntitySerializer(data=request.data, context={'request': request})
-
         if serializer.is_valid():
             entity = serializer.save()
-            return Response({
-                'message': 'Entity created successfully',
-                'entity': EntitySerializer(entity).data
-            }, status=status.HTTP_201_CREATED)
-
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

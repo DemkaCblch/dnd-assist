@@ -13,7 +13,6 @@ class EntityStats(models.Model):
     id = models.AutoField(primary_key=True)
     hp = models.IntegerField()
     level = models.IntegerField()
-    intelligence = models.IntegerField()
     resistance = models.IntegerField()
     stability = models.IntegerField()
     entity = models.OneToOneField(Entity, on_delete=models.CASCADE, related_name='entity_stats')

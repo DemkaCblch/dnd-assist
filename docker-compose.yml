@@ -14,15 +14,6 @@ services:
       retries: 3
       start_period: 40s
 
-  fronted:
-    build: ./fronted
-    environment:
-      REACT_APP_API_URL: "https://my_api"
-    expose:
-      - "3000"
-    restart: always
-    volumes:
-      - .:/app
 
   psql:
     build: ./psql
