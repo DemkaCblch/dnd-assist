@@ -11,6 +11,7 @@ class GetRoomSerializer(serializers.ModelSerializer):
         model = Room
         fields = ['id', 'name', 'room_status', 'master_token']
 
+
 class CreateRoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
@@ -28,27 +29,29 @@ class CreateRoomSerializer(serializers.ModelSerializer):
 
 
 class JoinRoomSerializer(serializers.Serializer):
-    room_id = serializers.IntegerField()
-    character_id = serializers.IntegerField()
+    character_id = serializers.IntegerField(required=False)
 
     def validate(self, attrs):
-        room_id = attrs.get('room_id')
-        character_id = attrs.get('character_id')
-        user = self.context['request'].user  # Здесь также используется user, который берется из токена
+        room_id = self.context['room_id']
+        token = self.context['request'].auth
 
-        # Проверяем, существует ли комната с данным ID
         try:
             room = Room.objects.get(id=room_id)
         except Room.DoesNotExist:
             raise serializers.ValidationError("Room not found")
 
-        # Проверяем, существует ли персонаж с данным ID и принадлежит ли он текущему пользователю
-        try:
-            character = Character.objects.get(id=character_id, user=user)  # Тут проверка на user
-        except Character.DoesNotExist:
-            raise serializers.ValidationError("Character not found or does not belong to the user")
-
-        # Возвращаем валидированные данные
         attrs['room'] = room
-        attrs['character'] = character
+        attrs['is_master'] = str(room.master_token) == str(token)
+
+        if not attrs['is_master']:
+            character_id = attrs.get('character_id')
+            if not character_id:
+                raise serializers.ValidationError("Character ID is required for players")
+
+            try:
+                character = Character.objects.get(id=character_id, user_token=str(token))
+                attrs['character'] = character
+            except Character.DoesNotExist:
+                raise serializers.ValidationError("Character not found or does not belong to the user")
+
         return attrs

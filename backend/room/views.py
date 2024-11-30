@@ -7,9 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from room.models import Room, PlayerInRoom
-from room.serializers import GetRoomSerializer, CreateRoomSerializer
+from room.serializers import GetRoomSerializer, CreateRoomSerializer, JoinRoomSerializer
 from user_profile.models import Character
-
 
 
 class GetRoomsAPIView(ListAPIView):
@@ -37,57 +36,61 @@ class JoinRoomAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, room_id):
-        # Извлекаем токен пользователя из заголовков запроса
-        token_key = request.headers.get('Authorization')
-        if token_key:
-            token = Token.objects.get(key=token_key.split()[1])  # Извлекаем токен из 'Token <token>'
+        # Сериализация данных
+        serializer = JoinRoomSerializer(data=request.data, context={'request': request, 'room_id': room_id})
+        serializer.is_valid(raise_exception=True)
+
+        validated_data = serializer.validated_data
+        room = validated_data['room']
+
+        token = request.auth
+
+        # Проверка, является ли пользователь мастером
+        is_master = validated_data['is_master']
+
+        if is_master:
+            # Мастер может войти при любом статусе комнаты
+            PlayerInRoom.objects.get_or_create(
+                user_token=token,
+                room=room,
+                character=None  # Мастер комнаты не привязывается к персонажу
+            )
+            return Response({"detail": "Master connected to the room"}, status=200)
         else:
-            raise PermissionDenied("Token is missing or invalid.")
+            # Игрок может войти только если комната в статусе "Waiting"
+            if room.room_status != "Waiting":
+                return Response({"detail": "Cannot join the room. The room is not in 'Waiting' status."}, status=400)
 
-        # Проверяем, существует ли комната с данным ID
-        try:
-            room = Room.objects.get(id=room_id)
-        except Room.DoesNotExist:
-            return Response({"detail": "Room not found"}, status=404)
+            # Проверка, если количество запусков >= 1, то проверяем, был ли игрок уже в комнате
+            if room.launches >= 1:
+                player_exists = PlayerInRoom.objects.filter(user_token=token, room=room).exists()
+                if player_exists:
+                    return Response({"detail": "You have already joined this room."}, status=400)
 
-        # Проверяем, что пользователь не является мастером комнаты
-        if room.master_token == str(token):
-            return Response({"detail": "You are the master of the room and cannot join as a player."}, status=400)
+            # Подключение игрока
+            character = validated_data['character']
+            PlayerInRoom.objects.get_or_create(
+                user_token=token,
+                room=room,
+                character=character
+            )
+            return Response({"detail": "Player connected to the room"}, status=200)
 
-        # Проверка, есть ли уже пользователь в комнате
-        if PlayerInRoom.objects.filter(user_token=str(token), room=room).exists():
-            return Response({"detail": "You are already in this room."}, status=400)
-
-        # Извлекаем персонажа, за которого играет пользователь
-        character_id = request.data.get('character_id')
-        try:
-            character = Character.objects.get(id=character_id, user_token=str(token))
-        except Character.DoesNotExist:
-            return Response({"detail": "Character not found or does not belong to the user."}, status=400)
-
-        # Создаем связь игрока с комнатой и персонажем
-        PlayerInRoom.objects.create(
-            user_token=token,
-            room=room,
-            character=character
-        )
-        return Response(status=200)
 
 
 class CloseRoomAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, room_id):
-        # Извлекаем токен пользователя из заголовков запроса
         token_key = request.headers.get('Authorization')
         if token_key:
-            token = Token.objects.get(key=token_key.split()[1])  # Извлекаем токен из 'Token <token>'
+            token = Token.objects.get(key=token_key.split()[1])
             user = token.user
         else:
             raise PermissionDenied("Token is missing or invalid.")
 
         try:
-            room = Room.objects.get(id=room_id, master=user)  # Используем пользователя, полученного через токен
+            room = Room.objects.get(id=room_id, master=user)
 
             # Проверка, закрыта ли комната уже
             if room.room_status == 'Closed':
