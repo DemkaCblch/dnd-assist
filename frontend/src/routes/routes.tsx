@@ -6,6 +6,7 @@ import Admin from '../pages/Admin';
 import Logout from '../pages/Logout';
 import Chars from '../pages/Characters';
 import Lobby from '../pages/Lobby';
+import GameField from '../pages/GameField';
 
 export const useRoutes = () => {
 
@@ -15,6 +16,7 @@ export const useRoutes = () => {
       <Route path="/" element={<Main />} />
       <Route path="/login" element={<Login />} />
       <Route path="/characters" element={<Chars />} />
+      <Route path="/field" element={<GameField />}/>
       
       <Route element={<PrivateRoute />}>
         <Route path='/admin' element={<Admin />} />

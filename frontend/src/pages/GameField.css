@@ -1,0 +1,34 @@
+.game-field {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    width: 500px;
+    height: 500px;
+    border: 2px solid #444;
+    background-color: #eee;
+  }
+  
+  .grid-cell {
+    border: 1px solid #ccc;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+  }
+  
+  .token {
+    width: 40px;
+    height: 40px;
+    background-color: red;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    position: absolute;
+  }
+  
+  .token:active {
+    cursor: grabbing;
+  }
+  
