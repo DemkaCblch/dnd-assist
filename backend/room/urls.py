@@ -14,4 +14,6 @@ urlpatterns = [
 
     # Закрытие комнаты
     path('api/close-room/<int:room_id>/', CloseRoomAPIView.as_view(), name='close-room'),
+
+    path('api/get-info-room/<int:room_id>/', GetRoomInfoAPIView.as_view(), name='get-info-room'),
 ]

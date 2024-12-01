@@ -55,3 +55,9 @@ class JoinRoomSerializer(serializers.Serializer):
                 raise serializers.ValidationError("Character not found or does not belong to the user")
 
         return attrs
+
+
+class RoomInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Room
+        fields = ['id', 'name', 'room_status']

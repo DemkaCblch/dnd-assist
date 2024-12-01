@@ -1,13 +1,13 @@
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, NotFound
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from room.models import Room, PlayerInRoom
-from room.serializers import GetRoomSerializer, CreateRoomSerializer, JoinRoomSerializer
+from room.serializers import GetRoomSerializer, CreateRoomSerializer, JoinRoomSerializer, RoomInfoSerializer
 from user_profile.models import Character
 
 
@@ -77,29 +77,14 @@ class JoinRoomAPIView(APIView):
             return Response({"detail": "Player connected to the room"}, status=200)
 
 
-
-class CloseRoomAPIView(APIView):
+class GetRoomInfoAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, room_id):
-        token_key = request.headers.get('Authorization')
-        if token_key:
-            token = Token.objects.get(key=token_key.split()[1])
-            user = token.user
-        else:
-            raise PermissionDenied("Token is missing or invalid.")
-
+    def get(self, request, room_id):
         try:
-            room = Room.objects.get(id=room_id, master=user)
-
-            # Проверка, закрыта ли комната уже
-            if room.room_status == 'Closed':
-                return Response({'error': 'Room is already closed.'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Обновляем статус комнаты
-            room.room_status = 'Closed'
-            room.save()
-
-            return Response({'message': 'Room closed successfully.'}, status=status.HTTP_200_OK)
+            room = Room.objects.get(id=room_id)
         except Room.DoesNotExist:
-            return Response({'error': 'Room not found.'}, status=status.HTTP_404_NOT_FOUND)
+            raise NotFound(detail="Room not found.", code=404)
+
+        serializer = RoomInfoSerializer(room)
+        return Response(serializer.data, status=200)
