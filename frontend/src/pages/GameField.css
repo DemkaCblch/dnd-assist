@@ -16,19 +16,105 @@
     display: flex;
   }
   
-  .token {
-    width: 40px;
-    height: 40px;
-    background-color: red;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: grab;
-    position: absolute;
-  }
   
   .token:active {
     cursor: grabbing;
+  }
+  
+
+  .add-token-btn {
+    margin: 20px 0;
+    padding: 10px 15px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+  }
+  
+  .add-token-btn:hover {
+    background-color: #45a049;
+  }
+  
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+  }
+  
+  .modal-content h3 {
+    margin-bottom: 15px;
+  }
+  
+  .modal-content label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .modal-content input {
+    margin-left: 10px;
+    width: 50px;
+  }
+  
+  .modal-content .close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 20px;
+    cursor: pointer;
+  }
+
+  .token {
+    position: absolute;
+    background-color: rgba(0, 128, 255, 0.7);
+    border: 1px solid #0077cc;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    user-select: none;
+    transition: transform 0.2s ease; /* Для плавности анимации */
+  }
+  
+  .token-content {
+    text-align: center;
+  }
+  
+  .remove-token-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  
+  .token:hover {
+    background-color: #0056b3;
+  }
+  
+  
+  .token:hover .remove-token-btn {
+    display: block;
   }
   
