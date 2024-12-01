@@ -14,6 +14,7 @@ services:
       retries: 3
       start_period: 40s
 
+
   psql:
     build: ./psql
     image: postgres
@@ -132,12 +133,6 @@ services:
       retries: 3
       start_period: 30s
 
-  celery:
-      image: celery
-      container_name: celery
-      depends_on:
-        - redis
-
   swagger:
     container_name: swagger
     restart: always
@@ -164,6 +159,7 @@ volumes:
   pgadmin-data:
   minio-storage:
   mongodb:
+  app:
 
 networks:
   gateway: {}

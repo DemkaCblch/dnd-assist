@@ -1,14 +1,8 @@
-from channels.db import database_sync_to_async
-
-from my_app.models import *
-from my_app.mongo_models import *
 from mongoengine.errors import ValidationError
-from my_app.models import Room
-from my_app.mongo_models import (
-    MGCharacter,
-    MGStats,
-    MGRoom,
-)
+
+from game.mongo_models import MGRoom, MGCharacterStats, MGCharacter, MGEntityFigures, MGPlayerFigures
+from room.models import Room
+
 
 def transfer_game_data_to_mongodb(room_id):
     # Шаг 1: Получаем комнату по заданному ID
@@ -48,7 +42,7 @@ def transfer_game_data_to_mongodb(room_id):
 
         stats = character.stats
 
-        mongo_stats = MGStats(
+        mongo_stats = MGCharacterStats(
             hp=stats.hp,
             race=stats.race,
             intelligence=stats.intelligence,
@@ -61,45 +55,29 @@ def transfer_game_data_to_mongodb(room_id):
 
         try:
             mongo_character = MGCharacter(
-                character_name=character.character_name,
+                name=character.name,
                 status=character.status,
                 user_token=str(player_in_room.user_token),  # Сохраняем токен как строку
                 stats=mongo_stats
             )
             mongo_character.save()
-            print(f"Character '{character.character_name}' migrated with ID {mongo_character.id}")
+            print(f"Character '{character.name}' migrated with ID {mongo_character.id}")
         except Exception as e:
-            print(f"Error saving character '{character.character_name}': {e}")
+            print(f"Error saving character '{character.name}': {e}")
 
-
-    # Шаг 4: Перенос фигур объектов (EntityFigures)
-    entity_figures = EntityFigures.objects.filter(table__room=room)
-    for entity in entity_figures:
-        try:
-            mongo_entity = MGEntityFigures(
-                picture_id=entity.picture_id,
-                table_id=entity.table.id
-            )
-            mongo_entity.save()
-            print(f"EntityFigure for user {entity.user.id} migrated with ID {mongo_entity.id}")
-        except AttributeError as e:
-            print(f"Error fetching token for entity figure: {e}")
-        except Exception as e:
-            print(f"Error saving entity figure: {e}")
-
-    # Шаг 5: Перенос фигур игроков (PlayerFigures)
-    player_figures = PlayerFigures.objects.filter(table__room=room)
-    for player_figure in player_figures:
-        try:
-            mongo_player_figure = MGPlayerFigures(
-                name=player_figure.name,
-                picture_id=player_figure.picture_id,
-                user_token=str(player_figure.user_token),
-                table_id=player_figure.table.id
-            )
-            mongo_player_figure.save()
-            print(f"PlayerFigure '{player_figure.name}' migrated with ID {mongo_player_figure.id}")
-        except Exception as e:
-            print(f"Error saving player figure '{player_figure.name}': {e}")
+    # Шаг 4: Перенос фигур игроков (PlayerFigures)
+    players_in_room = room.players_in_room.objects.filter(room_id=room)
+    for player in players_in_room:
+        # Извлекаем пользователя, связанного с таблицей
+        user = player.user_token
+        character = character.objests.filter(player.character_id)
+        # Создаем MongoDB объект на основе данных PostgreSQL
+        mongo_player_figure = MGPlayerFigures(
+            name=character.name,
+            picture_url="temp_none",
+            user_token=str(user),  # Автоматически заполняем user_token
+        )
+        # Сохраняем MongoDB объект
+        mongo_player_figure.save()
 
     print(f"Data migration for room {room_id} completed successfully!")
