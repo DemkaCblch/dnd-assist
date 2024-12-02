@@ -14,8 +14,8 @@ services:
       retries: 3
       start_period: 40s
 
-  fronted:
-    build: ./fronted
+  frontend:
+    build: ./frontend
     environment:
       REACT_APP_API_URL: "https://my_api"
     expose:
