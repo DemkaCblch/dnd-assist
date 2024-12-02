@@ -6,10 +6,8 @@ interface Token {
   x: number;
   y: number;
   name: string;
-  size: number; // Новый параметр для размера токена
+  size: number; // Размер токена
 }
-
-const GRID_SIZE = 10;
 
 const GameField: React.FC = () => {
   const [tokens, setTokens] = useState<Token[]>([]);
@@ -17,7 +15,9 @@ const GameField: React.FC = () => {
   const [newTokenName, setNewTokenName] = useState('');
   const [newTokenX, setNewTokenX] = useState(0);
   const [newTokenY, setNewTokenY] = useState(0);
-  const [newTokenSize, setNewTokenSize] = useState(1); // Новый параметр для размера
+  const [newTokenSize, setNewTokenSize] = useState(1);
+  const [gridWidth, setGridWidth] = useState(10); // Ширина игрового поля
+  const [gridHeight, setGridHeight] = useState(10); // Высота игрового поля
 
   const handleAddToken = () => {
     setTokens((prevTokens) => [
@@ -70,51 +70,83 @@ const GameField: React.FC = () => {
 
   return (
     <div>
-      <div className="game-field">
-        {Array.from({ length: GRID_SIZE }).map((_, y) =>
-         Array.from({ length: GRID_SIZE }).map((_, x) => {
-          const token = tokens.find(
-        (token) => token.x === x && token.y === y
-      );
+      <div className="controls">
+        <label>
+          Ширина поля:
+          <input
+            type="number"
+            value={gridWidth}
+            min="5"
+            max="50"
+            onChange={(e) => setGridWidth(Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Высота поля:
+          <input
+            type="number"
+            value={gridHeight}
+            min="5"
+            max="50"
+            onChange={(e) => setGridHeight(Number(e.target.value))}
+          />
+        </label>
+      </div>
 
-      return (
-        <div
-          key={`${x}-${y}`}
-          className="grid-cell"
-          data-x={x}
-          data-y={y}
-          onDragOver={allowDrop}
-          onDrop={handleDrop}
-        >
-          {token && (
-            <div
-              key={token.id}
-              className="token"
-              style={{
-                width: `${token.size * 100}%`,
-                height: `${token.size * 100}%`,
-                gridColumn: `span ${token.size}`,
-                gridRow: `span ${token.size}`,
-              }}
-              draggable
-              onDragStart={(event) => handleDragStart(event, token.id)}
-            >
-              <div className="token-content">
-                {token.name}
-                <button
-                  className="remove-token-btn"
-                  onClick={() => removeToken(token.id)}
-                >
-                  &times;
-                </button>
+      <div
+        className="game-field"
+        style={{
+          gridTemplateColumns: `repeat(${gridWidth}, 1fr)`,
+          gridTemplateRows: `repeat(${gridHeight}, 1fr)`,
+          width: `${gridWidth * 40}px`, // Изменяем ширину
+          height: `${gridHeight * 40}px`, // Изменяем высоту
+        }}
+      >
+        {Array.from({ length: gridHeight }).map((_, y) =>
+          Array.from({ length: gridWidth }).map((_, x) => {
+            const token = tokens.find(
+              (token) => token.x === x && token.y === y
+            );
+
+            return (
+              <div
+                key={`${x}-${y}`}
+                className="grid-cell"
+                data-x={x}
+                data-y={y}
+                onDragOver={allowDrop}
+                onDrop={handleDrop}
+              >
+                {token && (
+                  <div
+                    key={token.id}
+                    className="token"
+                    style={{
+                      width: `${token.size * 100}%`,
+                      height: `${token.size * 100}%`,
+                      gridColumn: `span ${token.size}`,
+                      gridRow: `span ${token.size}`,
+                    }}
+                    draggable
+                    onDragStart={(event) => handleDragStart(event, token.id)}
+                  >
+                    <div className="token-content">
+                      {token.name}
+                      <button
+                        className="remove-token-btn"
+                        onClick={() => removeToken(token.id)}
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          )}
-        </div>
-      );
-    })
-  )}
-</div>
+            );
+          })
+        )}
+      </div>
+
       <button className="add-token-btn" onClick={() => setIsModalOpen(true)}>
         Добавить фигурку
       </button>
@@ -139,7 +171,7 @@ const GameField: React.FC = () => {
                 type="number"
                 value={newTokenX}
                 min="0"
-                max={GRID_SIZE - 1}
+                max={gridWidth - 1}
                 onChange={(e) => setNewTokenX(Number(e.target.value))}
               />
             </label>
@@ -149,7 +181,7 @@ const GameField: React.FC = () => {
                 type="number"
                 value={newTokenY}
                 min="0"
-                max={GRID_SIZE - 1}
+                max={gridHeight - 1}
                 onChange={(e) => setNewTokenY(Number(e.target.value))}
               />
             </label>
@@ -159,7 +191,7 @@ const GameField: React.FC = () => {
                 type="number"
                 value={newTokenSize}
                 min="1"
-                max={GRID_SIZE}
+                max={Math.min(gridWidth, gridHeight)}
                 onChange={(e) => setNewTokenSize(Number(e.target.value))}
               />
             </label>

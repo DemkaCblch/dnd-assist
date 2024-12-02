@@ -1,20 +1,4 @@
-.game-field {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(10, 1fr);
-    width: 500px;
-    height: 500px;
-    border: 2px solid #444;
-    background-color: #eee;
-  }
-  
-  .grid-cell {
-    border: 1px solid #ccc;
-    position: relative;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-  }
+
   
   
   .token:active {
@@ -106,6 +90,7 @@
     color: white;
     cursor: pointer;
     font-size: 14px;
+    display: none;
   }
   
   
@@ -119,3 +104,19 @@
     display: block;
   }
   
+  .game-field {
+    display: grid;
+    border: 1px solid black;
+    margin: 20px auto;
+    position: relative;
+    background-image: url('C:\Users\bobra\Desktop\Ucheba\git\dnd-assist\frontend\public\one-piece-sanji.gif');
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  
+  .grid-cell {
+    border: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }

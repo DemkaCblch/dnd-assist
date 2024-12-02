@@ -109,23 +109,10 @@ const Main = () => {
       if (response.ok) {
         setRoomName(''); // Сбрасываем поле для названия
         setIsModalOpen(false); // Закрываем модальное окно
-  
-        const roomsResponse = await fetch('http://localhost:8000/api/rooms/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Token ${token}`,
-          },
-        });
-  
-        const rooms = await roomsResponse.json();
-        const selectedRoom = rooms.find((room: { name: string }) => room.name === roomName);
-  
-        if (selectedRoom) {
+          const selectedRoom = await response.json();
           const selectedRoomID = selectedRoom.id;
           navigate(`lobby/${selectedRoomID}`); // Используем шаблонные строки
           console.log('ID созданной комнаты:', selectedRoomID);
-        }
       }
     } catch (err) {
       console.error('Ошибка при создании комнаты:', err);
