@@ -35,11 +35,13 @@ INSTALLED_APPS = [
     'site_backend',
     'game',
     'room',
-    'user_profile'
+    'user_profile',
+    'corsheaders'
 ]
 
 WSGI_APPLICATION = 'dnd_assist.wsgi.application'
 ASGI_APPLICATION = 'dnd_assist.asgi.application'
+CORS_ALLOW_ALL_ORIGINS = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -49,6 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'dnd_assist.urls'

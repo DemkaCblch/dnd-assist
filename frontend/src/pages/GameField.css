@@ -83,18 +83,18 @@
   .token {
     position: absolute;
     background-color: rgba(0, 128, 255, 0.7);
-    border: 1px solid #0077cc;
-    box-sizing: border-box;
+    border: 2px solid #005f99;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
     user-select: none;
-    transition: transform 0.2s ease; /* Для плавности анимации */
+    transition: transform 0.3s ease-in-out; /* Для анимации перемещения */
+    z-index: 10;
   }
   
   .token-content {
     text-align: center;
+    color: white;
   }
   
   .remove-token-btn {
@@ -107,6 +107,7 @@
     cursor: pointer;
     font-size: 14px;
   }
+  
   
   
   .token:hover {

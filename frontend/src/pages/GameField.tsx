@@ -71,9 +71,9 @@ const GameField: React.FC = () => {
   return (
     <div>
       <div className="game-field">
-  {Array.from({ length: GRID_SIZE }).map((_, y) =>
-    Array.from({ length: GRID_SIZE }).map((_, x) => {
-      const token = tokens.find(
+        {Array.from({ length: GRID_SIZE }).map((_, y) =>
+         Array.from({ length: GRID_SIZE }).map((_, x) => {
+          const token = tokens.find(
         (token) => token.x === x && token.y === y
       );
 
