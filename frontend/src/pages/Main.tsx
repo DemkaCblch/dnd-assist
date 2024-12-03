@@ -14,25 +14,28 @@ const Main = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  const [rooms, setRooms] = useState<Room[]>([]); // Список комнат
-  const [loading, setLoading] = useState<boolean>(true); // Состояние загрузки
-  const [error, setError] = useState<string | null>(null); // Ошибка при запросе
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Состояние для модального окна
-  const [roomName, setRoomName] = useState<string>(''); // Название комнаты
-  const [joinRoomName, setJoinRoomName] = useState<string>(''); // Название комнаты для присоединения
-  const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false); // Модальное окно для присоединения
+  const [rooms, setRooms] = useState<Room[]>([]); 
+  const [error, setError] = useState<string | null>(null); //
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [roomName, setRoomName] = useState<string>(''); //
+  const [joinRoomName, setJoinRoomName] = useState<string>(''); // 
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false); //  
+  const [hoveredRoomId, setHoveredRoomId] = useState<BigInteger | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<BigInteger | null>(null);
+
+
 
   const handleOpenJoinModal = () => {
-    setIsJoinModalOpen(true); // Открываем модальное окно для присоединения
+    setIsJoinModalOpen(true); //
   };
 
   const handleCloseJoinModal = () => {
-    setIsJoinModalOpen(false); // Закрываем модальное окно для присоединения
-    setJoinRoomName(''); // Сбрасываем ввод
+    setIsJoinModalOpen(false); //   
+    setJoinRoomName(''); // 
   };
 
   const handleJoinRoomNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJoinRoomName(e.target.value); // Обновляем название комнаты для присоединения
+    setJoinRoomName(e.target.value); 
   };
 
   const handleJoinRoomSubmit = async () => {
@@ -58,8 +61,6 @@ const Main = () => {
         const selectedRoom = rooms.find((room: { name: string }) => room.name === joinRoomName);
         if(selectedRoom){
           console.log('Комната найдена:', room);
-
-          // Переход в комнату
           navigate(`lobby/${selectedRoom.id}`);
         }
       } else if (response.status === 404) {
@@ -72,19 +73,19 @@ const Main = () => {
       setError('Произошла ошибка. Попробуйте позже.');
     };
 
-    setIsJoinModalOpen(false); // Закрываем модальное окно
+    setIsJoinModalOpen(false); 
   };
 
   const handleCreateRoom = () => {
-    setIsModalOpen(true); // Открываем модальное окно
+    setIsModalOpen(true); 
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false); // Закрываем модальное окно
+    setIsModalOpen(false); 
   };
 
   const handleRoomNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRoomName(e.target.value); // Обновляем название комнаты
+    setRoomName(e.target.value); 
   };
 
   const handleSubmitRoom = async () => {
@@ -107,11 +108,11 @@ const Main = () => {
       });
   
       if (response.ok) {
-        setRoomName(''); // Сбрасываем поле для названия
-        setIsModalOpen(false); // Закрываем модальное окно
+        setRoomName(''); 
+        setIsModalOpen(false); //
           const selectedRoom = await response.json();
           const selectedRoomID = selectedRoom.id;
-          navigate(`lobby/${selectedRoomID}`); // Используем шаблонные строки
+          navigate(`lobby/${selectedRoomID}`); 
           console.log('ID созданной комнаты:', selectedRoomID);
       }
     } catch (err) {
@@ -126,9 +127,9 @@ const Main = () => {
     newRooms.forEach((newRoom) => {
       const index = updatedRooms.findIndex((room) => room.name === newRoom.name);
       if (index >= 0) {
-        updatedRooms[index] = newRoom; // Обновляем существующую комнату
+        updatedRooms[index] = newRoom; 
       } else {
-        updatedRooms.push(newRoom); // Добавляем новую комнату
+        updatedRooms.push(newRoom); 
       }
     });
   
@@ -151,7 +152,7 @@ const Main = () => {
   
         if (response.ok) {
           const data = await response.json();
-          mergeRooms(data); // Обновляем список через слияние
+          mergeRooms(data); 
         }
       } catch (err) {
         console.error('Ошибка обновления комнат:', err);
@@ -168,6 +169,10 @@ const Main = () => {
   const handleJoinRoom = () => {
     isAuthenticated ? console.log('Присоединиться к комнате') : navigate('/login');
   };
+  const handleRoomClick = (roomId: BigInteger) => {
+    setSelectedRoomId(selectedRoomId === roomId ? null : roomId);
+  };
+  
 
   return (
     <div className="MainBase">
@@ -236,12 +241,38 @@ const Main = () => {
           <p className="error">{error}</p>
         ) : rooms.length > 0 ? (
           <ul>
-            {rooms.map((room, index) => (
-              <li key={index}>
-                <strong>{room.name}</strong> - {room.room_status}
+            {rooms.map((room) => (
+              <li
+                key={room.id.toString()}
+                onClick={() => handleRoomClick(room.id)}
+                className="room-item"
+                style={{ cursor: 'pointer', marginBottom: '10px' }}
+              >
+                <div>
+                  <strong>{room.name}</strong> - {room.room_status}
+                </div>
+                {selectedRoomId === room.id && (
+                  <button
+                    className="join-room-button"
+                    onClick={() => navigate(`lobby/${room.id}`)}
+                    style={{
+                      marginTop: '5px',
+                      padding: '5px 10px',
+                      backgroundColor: '#4CAF50',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '5px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Присоединиться
+                  </button>
+                )}
               </li>
             ))}
           </ul>
+
+
         ) : (
           <p>Нет доступных комнат</p>
         )}

@@ -79,30 +79,19 @@
   .token-content {
     text-align: center;
     color: white;
+      z-index: 1; /* Убедитесь, что текст остаётся поверх контекстного меню */
+      white-space: nowrap; /* Предотвращает перенос текста */
+      text-overflow: ellipsis; /* Показывает "..." если текст не помещается */
+      overflow: hidden; /* Скрывает лишний текст */
   }
   
-  .remove-token-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: transparent;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-    display: none;
-  }
   
   
   
   .token:hover {
     background-color: #0056b3;
   }
-  
-  
-  .token:hover .remove-token-btn {
-    display: block;
-  }
+
   
   .game-field {
     display: grid;
@@ -120,3 +109,27 @@
     justify-content: center;
     align-items: center;
   }
+
+  .context-menu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    z-index: 100;
+  }
+  
+  .context-menu button {
+    display: block;
+    width: 100%;
+    border: none;
+    background: none;
+    padding: 5px 10px;
+    text-align: left;
+    cursor: pointer;
+  }
+  
+  .context-menu button:hover {
+    background-color: #f0f0f0;
+  }
+  

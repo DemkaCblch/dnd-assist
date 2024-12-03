@@ -18,6 +18,13 @@ const GameField: React.FC = () => {
   const [newTokenSize, setNewTokenSize] = useState(1);
   const [gridWidth, setGridWidth] = useState(10); // Ширина игрового поля
   const [gridHeight, setGridHeight] = useState(10); // Высота игрового поля
+  const [editingToken, setEditingToken] = useState<Token | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    tokenId: string | null;
+  }>({ visible: false, x: 0, y: 0, tokenId: null });
 
   const handleAddToken = () => {
     setTokens((prevTokens) => [
@@ -36,7 +43,48 @@ const GameField: React.FC = () => {
     setNewTokenY(0);
     setNewTokenSize(1);
   };
+  const showContextMenu = (
+    event: React.MouseEvent<HTMLDivElement>,
+    tokenId: string
+  ) => {
+    event.preventDefault();
+    const boundingRect = event.currentTarget.getBoundingClientRect();
+    setContextMenu({
+      visible: true,
+      x: event.clientX - boundingRect.left,
+      y: event.clientY - boundingRect.top,
+      tokenId,
+    });
+  };
+  const hideContextMenu = () => {
+    setContextMenu({ visible: false, x: 0, y: 0, tokenId: null });
+  };
 
+  // Обработчик действий из контекстного меню
+  const handleContextMenuAction = (action: string) => {
+    if (contextMenu.tokenId) {
+      const token = tokens.find((t) => t.id === contextMenu.tokenId);
+  
+      if (action === 'delete') {
+        removeToken(contextMenu.tokenId);
+      } else if (action === 'edit' && token) {
+        setEditingToken(token);
+      }
+  
+      // Дополнительные действия (если потребуются)
+    }
+    hideContextMenu();
+  };
+  const handleUpdateToken = () => {
+    if (editingToken) {
+      setTokens((prevTokens) =>
+        prevTokens.map((token) =>
+          token.id === editingToken.id ? editingToken : token
+        )
+      );
+      setEditingToken(null);
+    }
+  };
   const moveToken = (id: string, x: number, y: number) => {
     setTokens((prevTokens) =>
       prevTokens.map((token) =>
@@ -92,7 +140,7 @@ const GameField: React.FC = () => {
           />
         </label>
       </div>
-
+    <div onClick={hideContextMenu}>
       <div
         className="game-field"
         style={{
@@ -116,6 +164,7 @@ const GameField: React.FC = () => {
                 data-y={y}
                 onDragOver={allowDrop}
                 onDrop={handleDrop}
+                onContextMenu={(e) => e.preventDefault()}
               >
                 {token && (
                   <div
@@ -129,16 +178,84 @@ const GameField: React.FC = () => {
                     }}
                     draggable
                     onDragStart={(event) => handleDragStart(event, token.id)}
+                    onContextMenu={(event) => showContextMenu(event, token.id)}
                   >
                     <div className="token-content">
                       {token.name}
-                      <button
-                        className="remove-token-btn"
-                        onClick={() => removeToken(token.id)}
-                      >
-                        &times;
-                      </button>
                     </div>
+                    {contextMenu.visible && (
+        <div
+          className="context-menu"
+          style={{
+            top: contextMenu.y,
+            left: contextMenu.x,
+          }}
+        >
+          <button onClick={() => handleContextMenuAction('delete')}>
+            Удалить
+          </button>
+          <button onClick={() => handleContextMenuAction('edit')}>
+            Редактировать
+          </button>
+        </div>
+      )}
+      {editingToken && (
+  <div className="modal">
+    <div className="modal-content">
+      <span className="close" onClick={() => setEditingToken(null)}>
+        &times;
+      </span>
+      <h3>Редактировать фигурку</h3>
+      <label>
+        Имя:
+        <input
+          type="text"
+          value={editingToken.name}
+          onChange={(e) =>
+            setEditingToken({ ...editingToken, name: e.target.value })
+          }
+        />
+      </label>
+      <label>
+        X:
+        <input
+          type="number"
+          value={editingToken.x}
+          min="0"
+          max={gridWidth - 1}
+          onChange={(e) =>
+            setEditingToken({ ...editingToken, x: Number(e.target.value) })
+          }
+        />
+      </label>
+      <label>
+        Y:
+        <input
+          type="number"
+          value={editingToken.y}
+          min="0"
+          max={gridHeight - 1}
+          onChange={(e) =>
+            setEditingToken({ ...editingToken, y: Number(e.target.value) })
+          }
+        />
+      </label>
+      <label>
+        Размер:
+        <input
+          type="number"
+          value={editingToken.size}
+          min="1"
+          max={Math.min(gridWidth, gridHeight)}
+          onChange={(e) =>
+            setEditingToken({ ...editingToken, size: Number(e.target.value) })
+          }
+        />
+      </label>
+      <button onClick={handleUpdateToken}>Сохранить</button>
+    </div>
+  </div>
+)}
                   </div>
                 )}
               </div>
@@ -199,6 +316,7 @@ const GameField: React.FC = () => {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 };
