@@ -1,44 +1,47 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Characters.css'
+import React, { useState, useEffect } from "react";
+import "./Characters.css";
+
+interface CharacterStats {
+  hp: number;
+  race: string;
+  level: number;
+  intelligence: number;
+  strength: number;
+  dexterity: number;
+  constitution: number;
+  wisdom: number;
+  resistance: number;
+  stability: number;
+  charisma: number;
+}
+
+interface Character {
+  id: number;
+  name: string;
+  status: string;
+  character_stats: CharacterStats;
+}
+
+interface UserProfile {
+  username: string;
+  date_joined: string;
+}
 
 const Profile = () => {
-  interface Character {
-    id: number;
-    name: string;
-    status: string;
-    character_stats: {
-      hp: number;
-      race: string;
-      level: number;
-      intelligence: number;
-      strength: number;
-      dexterity: number;
-      constitution: number;
-      wisdom: number;
-      resistance: number;
-      stability: number;
-      charisma: number;
-    };
-  }
-  const [user, setUser] = useState<any>(null); 
-  const [characters, setCharacters] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null); 
-  const [isCharacterModalOpen, setIsCharacterModalOpen] = useState<boolean>(false); 
-  const closeCharacterModal = () => {
-    setIsCharacterModalOpen(false);
-    setSelectedCharacter(null); 
-  };
-
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); 
-  const [newCharacter, setNewCharacter] = useState<any>({
-    name: '',
-    status: 'Активен',
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [newCharacter, setNewCharacter] = useState<Character>({
+    id: 0,
+    name: "",
+    status: "Активен",
     character_stats: {
       hp: 100,
-      race: 'Человек',
+      race: "",
       level: 1,
       intelligence: 10,
       strength: 10,
@@ -51,93 +54,83 @@ const Profile = () => {
     },
   });
 
-  const navigate = useNavigate();
-
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token) return navigate('/login'); 
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
 
+    // Fetch user profile
+    const fetchUserProfile = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/profile/', {
-          method: 'GET',
+        const response = await fetch("http://localhost:8000/api/profile/", {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Token ${token}`,
           },
         });
 
         if (response.ok) {
           const data = await response.json();
-          setUser(data);
+          setUserProfile(data);
         } else {
-          setError('Ошибка при получении данных');
+          setError("Ошибка при загрузке профиля");
         }
       } catch (err) {
-        setError('Произошла ошибка. Попробуйте позже.');
+        console.error(err);
+        setError("Ошибка подключения к серверу");
       }
     };
 
-    const fetchUserCharacters = async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token) return navigate('/login');
-
+    // Fetch characters
+    const fetchCharacters = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/get-character/', {
-          method: 'GET',
+        const response = await fetch("http://localhost:8000/api/get-character/", {
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             Authorization: `Token ${token}`,
           },
         });
 
         if (response.ok) {
           const data = await response.json();
-          setCharacters(data || []);
+          setCharacters(data);
         } else {
-          setError('Ошибка при получении персонажей');
+          setError("Ошибка при загрузке персонажей");
         }
       } catch (err) {
-        setError('Произошла ошибка. Попробуйте позже.');
+        console.error(err);
+        setError("Ошибка подключения к серверу");
       }
     };
 
     fetchUserProfile();
-    fetchUserCharacters();
-  }, [navigate]);
+    fetchCharacters();
+  }, []);
 
-  const handleCharacterClick = async (characterId: number) => {
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
+  const handleCharacterClick = (character: Character) => {
+    setSelectedCharacter(character);
+  };
 
-    try {
-      const response = await fetch(`http://localhost:8000/api/characters/${characterId}/`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Token ${token}`,
-        },
-      });
+  const closeCharacterModal = () => {
+    setSelectedCharacter(null);
+  };
 
-      if (response.ok) {
-        const data = await response.json();
-        setSelectedCharacter(data); 
-        setIsCharacterModalOpen(true); 
-      }
-    } catch (error) {
-      console.error('Ошибка при получении данных персонажа:', error);
-    }
+  const openCreateModal = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const closeCreateModal = () => {
+    setIsCreateModalOpen(false);
   };
 
   const handleCreateCharacter = async () => {
-    const token = localStorage.getItem('authToken');
-    if (!token) return navigate('/login'); 
+    const token = localStorage.getItem("authToken");
+    if (!token) return;
 
     try {
-      const response = await fetch('http://localhost:8000/api/create-character/', {
-        method: 'POST',
+      const response = await fetch("http://localhost:8000/api/create-character/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Token ${token}`,
         },
         body: JSON.stringify(newCharacter),
@@ -145,227 +138,232 @@ const Profile = () => {
 
       if (response.ok) {
         const createdCharacter = await response.json();
-        setCharacters([...characters, createdCharacter]); 
-        setIsModalOpen(false); 
-        setNewCharacter({
-          name: '',
-          status: 'Активен',
-          character_stats: {
-            hp: 100,
-            race: 'Человек',
-            level: 1,
-            intelligence: 10,
-            strength: 10,
-            dexterity: 10,
-            constitution: 10,
-            wisdom: 10,
-            resistance: 10,
-            stability: 10,
-            charisma: 10,
-          },
-        }); // Сбрасываем форму
+        setCharacters([...characters, createdCharacter]);
+        closeCreateModal();
       } else {
-        setError('Ошибка при создании персонажа');
+        setError("Ошибка при создании персонажа");
       }
     } catch (err) {
-      setError('Произошла ошибка при создании персонажа');
+      console.error(err);
+      setError("Ошибка подключения к серверу");
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNewCharacter({
-      ...newCharacter,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+  
+    if (name in newCharacter.character_stats) {
+      // Если поле числовое, преобразуем значение, иначе сохраняем как текст
+      const isNumericField = ["hp", "level", "intelligence", "strength", "dexterity", "constitution", "wisdom", "resistance", "stability", "charisma"].includes(name);
+  
+      setNewCharacter((prev) => ({
+        ...prev,
+        character_stats: {
+          ...prev.character_stats,
+          [name]: isNumericField ? (value === "" ? "" : Number(value)) : value,
+        },
+      }));
+    } else {
+      setNewCharacter((prev) => ({
+        ...prev,
+        [name]: value, // Для обычных полей оставляем значение как есть
+      }));
+    }
   };
-
-  const handleStatsChange = (e: React.ChangeEvent<HTMLInputElement>, stat: string) => {
-    setNewCharacter({
-      ...newCharacter,
-      character_stats: {
-        ...newCharacter.character_stats,
-        [stat]: parseInt(e.target.value, 10),
-      },
-    });
-  };
-
+  
+  
 
   return (
-    <div className="profile-page">
+    <div className="profile">
       <h1>Личный кабинет</h1>
-      <div>
-        <strong>Имя пользователя:</strong> {user?.username}
-      </div>
-      <div>
-        <strong>Дата регистрации:</strong> {new Date(user?.date_joined).toLocaleDateString()}
-      </div>
-
-      <h2>Ваши персонажи</h2>
-      <button onClick={() => setIsModalOpen(true)} className="btn create-character-btn">
+      {userProfile && (
+        <div className="user-info">
+          <p><strong>Имя пользователя:</strong> {userProfile.username}</p>
+          <p><strong>Дата регистрации:</strong> {new Date(userProfile.date_joined).toLocaleDateString()}</p>
+        </div>
+      )}
+      {error && <p className="error">{error}</p>}
+      <button className="create-button" onClick={openCreateModal}>
         Создать персонажа
       </button>
-
-      {characters.length > 0 ? (
-        <ul>
-          {characters.map((character) => (
-            <li
+      <div className="characters-list">
+        {characters.length > 0 ? (
+          characters.map((character) => (
+            <div
               key={character.id}
-              onClick={() => handleCharacterClick(character.id)} 
               className="character-item"
+              onClick={() => handleCharacterClick(character)}
             >
-              {character.name} - {character.status}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>Нет доступных персонажей.</p>
-      )}
+              <h2>{character.name}</h2>
+              <p>Статус: {character.status}</p>
+            </div>
+          ))
+        ) : (
+          <p>У вас нет созданных персонажей</p>
+        )}
+      </div>
 
-      {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button className="modal-close-button" onClick={() => setIsModalOpen(false)}>
+      {/* Модальное окно создания персонажа */}
+      {isCreateModalOpen && (
+        <div className="modal-overlay" onClick={closeCreateModal}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()} // Остановка всплытия события
+          >
+            <button className="modal-close-button" onClick={closeCreateModal}>
               ×
             </button>
-            <h2>Создать нового персонажа</h2>
-            <form>
-              <input
-                type="text"
-                name="name"
-                value={newCharacter.name}
-                onChange={handleChange}
-                placeholder="Имя персонажа"
-              />
-              <input
-                type="text"
-                name="status"
-                value={newCharacter.status}
-                onChange={handleChange}
-                placeholder="Статус персонажа"
-              />
-              <div className="character-stats">
-                <h3>Характеристики</h3>
-                <div className="stats-row">
-                  <label>HP:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.hp}
-                    onChange={(e) => handleStatsChange(e, 'hp')}
-                    placeholder="HP"
-                  />
-                </div>
-                <div className="stats-row">
-                  <label>Уровень:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.level}
-                    onChange={(e) => handleStatsChange(e, 'level')}
-                    placeholder="Уровень"
-                  />
-                </div>
-                <div className="stats-row">
-                  <label>Интеллект:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.intelligence}
-                    onChange={(e) => handleStatsChange(e, 'intelligence')}
-                    placeholder="Интеллект"
-                  />
-                </div>
-                <div className="stats-row">
-                  <label>Сила:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.strength}
-                    onChange={(e) => handleStatsChange(e, 'strength')}
-                    placeholder="Сила"
-                  />
-                </div>
-                <div className="stats-row">
-                  <label>Ловкость:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.dexterity}
-                    onChange={(e) => handleStatsChange(e, 'dexterity')}
-                    placeholder="Ловкость"
-                  />
-                </div>
-                <div className="stats-row">
-                  <label>Выносливость:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.constitution}
-                    onChange={(e) => handleStatsChange(e, 'constitution')}
-                    placeholder="Выносливость"
-                  />
-                </div>
-                <div className="stats-row">
-                  <label>Мудрость:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.wisdom}
-                    onChange={(e) => handleStatsChange(e, 'wisdom')}
-                    placeholder="Мудрость"
-                  />
-                </div>
-                <div className="stats-row">
-                  <label>Сопротивление:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.resistance}
-                    onChange={(e) => handleStatsChange(e, 'resistance')}
-                    placeholder="Сопротивление"
-                  />
-                </div>
-                <div className="stats-row">
-                  <label>Устойчивость:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.stability}
-                    onChange={(e) => handleStatsChange(e, 'stability')}
-                    placeholder="Устойчивость"
-                  />
-                </div>
-                <div className="stats-row">
-                  <label>Харизма:</label>
-                  <input
-                    type="number"
-                    value={newCharacter.character_stats.charisma}
-                    onChange={(e) => handleStatsChange(e, 'charisma')}
-                    placeholder="Харизма"
-                  />
-                </div>
-              </div>
-              <button type="button" onClick={handleCreateCharacter}>
-                Создать персонажа
-              </button>
-            </form>
+            <h2>Создать персонажа</h2>
+            <div className="character-stats">
+              <label>
+                Имя персонажа:
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Введите имя"
+                  value={newCharacter.name}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                HP:
+                <input
+                  type="number"
+                  name="hp"
+                  placeholder="Введите HP"
+                  value={newCharacter.character_stats.hp}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Раса:
+                 <input
+                 type="text"
+                 name="race"
+                 placeholder="Введите расу"
+                 value={newCharacter.character_stats.race}
+                 onChange={handleChange}
+               />
+               
+              </label>
+              <label>
+                Уровень:
+                <input
+                  type="number"
+                  name="level"
+                  placeholder="Введите уровень"
+                  value={newCharacter.character_stats.level}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Интеллект:
+                <input
+                  type="number"
+                  name="intelligence"
+                  placeholder="Введите интеллект"
+                  value={newCharacter.character_stats.intelligence}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Сила:
+                <input
+                  type="number"
+                  name="strength"
+                  placeholder="Введите силу"
+                  value={newCharacter.character_stats.strength}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Ловкость:
+                <input
+                  type="number"
+                  name="dexterity"
+                  placeholder="Введите ловкость"
+                  value={newCharacter.character_stats.dexterity}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Телосложение:
+                <input
+                  type="number"
+                  name="constitution"
+                  placeholder="Введите телосложение"
+                  value={newCharacter.character_stats.constitution}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Мудрость:
+                <input
+                  type="number"
+                  name="wisdom"
+                  placeholder="Введите мудрость"
+                  value={newCharacter.character_stats.wisdom}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Сопротивляемость:
+                <input
+                  type="number"
+                  name="resistance"
+                  placeholder="Введите сопротивляемость"
+                  value={newCharacter.character_stats.resistance}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Устойчивость:
+                <input
+                  type="number"
+                  name="stability"
+                  placeholder="Введите устойчивость"
+                  value={newCharacter.character_stats.stability}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Харизма:
+                <input
+                  type="number"
+                  name="charisma"
+                  placeholder="Введите харизму"
+                  value={newCharacter.character_stats.charisma}
+                  onChange={handleChange}
+                />
+              </label>
+            </div>
 
-            {error && <p className="error">{error}</p>}
+            <button onClick={handleCreateCharacter}>Создать</button>
           </div>
         </div>
       )}
-      {isCharacterModalOpen && selectedCharacter && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+
+      {/* Модальное окно с информацией о персонаже */}
+      {selectedCharacter && (
+        <div className="modal-overlay" onClick={closeCharacterModal}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()} // Остановка всплытия события
+          >
             <button className="modal-close-button" onClick={closeCharacterModal}>
               ×
             </button>
-            <h2>Информация о персонаже: {selectedCharacter.name}</h2>
+            <h2>{selectedCharacter.name}</h2>
             <p><strong>Статус:</strong> {selectedCharacter.status}</p>
-            <h3>Характеристики:</h3>
+            <h3>Характеристики</h3>
             <ul>
-              <li><strong>Здоровье:</strong> {selectedCharacter.character_stats.hp}</li>
-              <li><strong>Раса:</strong> {selectedCharacter.character_stats.race}</li>
-              <li><strong>Уровень:</strong> {selectedCharacter.character_stats.level}</li>
-              <li><strong>Интеллект:</strong> {selectedCharacter.character_stats.intelligence}</li>
-              <li><strong>Сила:</strong> {selectedCharacter.character_stats.strength}</li>
-              <li><strong>Ловкость:</strong> {selectedCharacter.character_stats.dexterity}</li>
-              <li><strong>Конституция:</strong> {selectedCharacter.character_stats.constitution}</li>
-              <li><strong>Мудрость:</strong> {selectedCharacter.character_stats.wisdom}</li>
-              <li><strong>Сопротивление:</strong> {selectedCharacter.character_stats.resistance}</li>
-              <li><strong>Стойкость:</strong> {selectedCharacter.character_stats.stability}</li>
-              <li><strong>Харизма:</strong> {selectedCharacter.character_stats.charisma}</li>
+              {Object.entries(selectedCharacter.character_stats).map(
+                ([key, value]) => (
+                  <li key={key}>
+                    <strong>{key}:</strong> {value}
+                  </li>
+                )
+              )}
             </ul>
           </div>
         </div>

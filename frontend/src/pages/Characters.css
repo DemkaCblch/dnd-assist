@@ -1,107 +1,121 @@
-/* Стили для модального окна */
+
+  /* Модальное окно */
+.modal-content input {
+  display: block;
+  margin-bottom: 10px;
+  padding: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.create-button {
+  margin-bottom: 20px;
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.create-button:hover {
+  background-color: #45a049;
+}
+
+.user-info {
+  margin-bottom: 20px;
+}
+
+  /* Список персонажей */
+.characters-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.character-item {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: box-shadow 0.3s;
+}
+
+.character-item:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.character-item h2 {
+  margin: 0 0 10px;
+}
+
+.character-item p {
+  margin: 0;
+}
+
+/* Модальное окно */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: auto; 
-  }
-  
-  .modal-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    width: 90%; 
-    max-width: 600px;
-    max-height: 80vh; 
-    overflow-y: auto; 
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .modal-close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: transparent;
-    border: none;
-    font-size: 20px;
-    cursor: pointer;
-    color: #333;
-  }
-  
-  /* Стили для формы создания персонажа */
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-  
-  input[type="text"],
-  input[type="number"] {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    width: 100%;
-  }
-  
-  input[type="text"]:focus,
-  input[type="number"]:focus {
-    border-color: #4CAF50;
-    outline: none;
-  }
-  
-  button {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button:hover {
-    background-color: #45a049;
-  }
-  
-  button:active {
-    background-color: #388e3c;
-  }
-  
-  .character-stats {
-    margin-top: 20px;
-  }
-  
-  .stats-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  label {
-    font-weight: bold;
-    width: 120px;
-  }
-  
-  input[type="number"] {
-    width: 60px;
-  }
-  
-  .stats-row input {
-    width: 100%;
-    max-width: 100px;
-  }
-  
-  .error {
-    color: red;
-    font-size: 14px;
-    margin-top: 10px;
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #333;
+}
+
+.modal-content h2 {
+  margin: 0 0 10px;
+}
+
+.modal-content ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.modal-content li {
+  margin-bottom: 10px;
+}
+
+.character-stats label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.character-stats label input {
+  padding: 8px;
+  margin-top: 5px;
+  font-size: 14px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
