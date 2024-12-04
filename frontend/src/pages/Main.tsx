@@ -8,6 +8,7 @@ interface Room {
   id: BigInteger;
   name: string;
   room_status: string;
+  master_token: string;
 }
 
 const Main = () => {
@@ -22,6 +23,10 @@ const Main = () => {
   const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false); //  
   const [hoveredRoomId, setHoveredRoomId] = useState<BigInteger | null>(null);
   const [selectedRoomId, setSelectedRoomId] = useState<BigInteger | null>(null);
+  const [characters, setCharacters] = useState<any[]>([]); // Список персонажей пользователя
+  const [isCharacterModalOpen, setIsCharacterModalOpen] = useState<boolean>(false); // Статус окна выбора персонажей
+  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null); // Выбранный персонаж
+
 
 
 
@@ -165,13 +170,67 @@ const Main = () => {
     return () => clearInterval(interval);
   }, []);
 
-  
-  const handleJoinRoom = () => {
-    isAuthenticated ? console.log('Присоединиться к комнате') : navigate('/login');
-  };
+
   const handleRoomClick = (roomId: BigInteger) => {
     setSelectedRoomId(selectedRoomId === roomId ? null : roomId);
   };
+  const openCharacterModal = async (roomId: BigInteger) => {
+    const token = localStorage.getItem('authToken');
+    const room = rooms.find((room) => room.id === roomId);
+    if (!token) return;
+  
+    try {
+      const response = await fetch('http://localhost:8000/api/get-character/', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Token ${token}`,
+        },
+      });
+  
+      if (response.ok) {
+        if (room && token === room.master_token) {
+          // Если пользователь мастер комнаты, сразу направляем в комнату
+          navigate(`lobby/${roomId}`);
+        } else {
+        const data = await response.json();
+        setCharacters(data); // Устанавливаем список персонажей
+        setSelectedRoomId(roomId); // Устанавливаем текущую комнату
+        setIsCharacterModalOpen(true); // Открываем окно
+        }
+      }
+    } catch (err) {
+      console.error('Ошибка при загрузке персонажей:', err);
+    }
+  };
+
+  const joinRoomWithCharacter = async () => {
+    if (!selectedCharacterId || !selectedRoomId) return;
+  
+    const token = localStorage.getItem('authToken');
+    if (!token) return;
+  
+    try {
+      const response = await fetch(`http://localhost:8000/api/connect-room/${selectedRoomId}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({ character_id: selectedCharacterId }),
+      });
+  
+      if (response.ok) {
+        setIsCharacterModalOpen(false); // Закрываем окно
+        navigate(`lobby/${selectedRoomId}`); // Переход в лобби
+      } else {
+        console.error('Ошибка при присоединении к комнате');
+      }
+    } catch (err) {
+      console.error('Ошибка при отправке запроса:', err);
+    }
+  };
+  
   
 
   return (
@@ -220,6 +279,55 @@ const Main = () => {
         </div>
       )}
 
+      {isCharacterModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="modal-close-button" onClick={() => setIsCharacterModalOpen(false)}>
+              ×
+            </button>
+            <h2>Выберите персонажа</h2>
+            {characters.length > 0 ? (
+              <ul>
+                {characters.map((character) => (
+                  <li
+                    key={character.id}
+                    onClick={() => setSelectedCharacterId(character.id)}
+                    style={{
+                      cursor: 'pointer',
+                      margin: '10px 0',
+                      padding: '5px',
+                      backgroundColor: selectedCharacterId === character.id ? '#4CAF50' : '#f1f1f1',
+                      color: selectedCharacterId === character.id ? 'white' : 'black',
+                      borderRadius: '5px',
+                    }}
+                  >
+                    {character.name} (Уровень: {character.character_stats.level})
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Нет доступных персонажей</p>
+            )}
+            <button
+              onClick={joinRoomWithCharacter}
+              style={{
+                marginTop: '10px',
+                padding: '10px 20px',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+              }}
+              disabled={!selectedCharacterId}
+            >
+              Присоединиться
+            </button>
+          </div>
+        </div>
+      )}
+
+
 
       <header className="header">
         <h1 className="title">Добро пожаловать на D&D-Assist</h1>
@@ -254,7 +362,7 @@ const Main = () => {
                 {selectedRoomId === room.id && (
                   <button
                     className="join-room-button"
-                    onClick={() => navigate(`lobby/${room.id}`)}
+                    onClick={() => openCharacterModal(room.id)}
                     style={{
                       marginTop: '5px',
                       padding: '5px 10px',
@@ -268,6 +376,7 @@ const Main = () => {
                     Присоединиться
                   </button>
                 )}
+
               </li>
             ))}
           </ul>
