@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Characters.css";
+import apiClient from "../apiClient";
 
 interface CharacterStats {
   hp: number;
@@ -58,50 +59,26 @@ const Profile = () => {
     const token = localStorage.getItem("authToken");
     if (!token) return;
 
-    // Fetch user profile
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/profile/", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setUserProfile(data);
-        } else {
-          setError("Ошибка при загрузке профиля");
-        }
+        const response = await apiClient.get("/profile/");
+        setUserProfile(response.data);
       } catch (err) {
         console.error(err);
-        setError("Ошибка подключения к серверу");
+        setError("Ошибка при загрузке профиля");
       }
     };
-
-    // Fetch characters
+  
     const fetchCharacters = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/get-character/", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setCharacters(data);
-        } else {
-          setError("Ошибка при загрузке персонажей");
-        }
+        const response = await apiClient.get("/get-character/");
+        setCharacters(response.data);
       } catch (err) {
         console.error(err);
-        setError("Ошибка подключения к серверу");
+        setError("Ошибка при загрузке персонажей");
       }
     };
-
+  
     fetchUserProfile();
     fetchCharacters();
   }, []);
@@ -123,29 +100,13 @@ const Profile = () => {
   };
 
   const handleCreateCharacter = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) return;
-
     try {
-      const response = await fetch("http://localhost:8000/api/create-character/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify(newCharacter),
-      });
-
-      if (response.ok) {
-        const createdCharacter = await response.json();
-        setCharacters([...characters, createdCharacter]);
-        closeCreateModal();
-      } else {
-        setError("Ошибка при создании персонажа");
-      }
+      const response = await apiClient.post("/create-character/", newCharacter);
+      setCharacters([...characters, response.data]);
+      closeCreateModal();
     } catch (err) {
       console.error(err);
-      setError("Ошибка подключения к серверу");
+      setError("Ошибка при создании персонажа");
     }
   };
 

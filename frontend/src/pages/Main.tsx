@@ -3,6 +3,7 @@ import './Main.css';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import Lobby from './Lobby';
+import apiClient from '../apiClient';
 
 interface Room {
   id: BigInteger;
@@ -49,36 +50,22 @@ const Main = () => {
       return;
     }
 
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-
     try {
-      const response = await fetch(`http://localhost:8000/api/rooms/`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Token ${token}`,
-        },
-      });
+      const response = await apiClient.get('rooms/');
+      const selectedRoom = response.data.find((room: Room) => room.name === joinRoomName);
 
-      if (response.ok) {
-        const room = await response.json();
-        const selectedRoom = rooms.find((room: { name: string }) => room.name === joinRoomName);
-        if(selectedRoom){
-          console.log('Комната найдена:', room);
-          navigate(`lobby/${selectedRoom.id}`);
-        }
-      } else if (response.status === 404) {
-        setError('Комната с таким названием не найдена');
+      if (selectedRoom) {
+        console.log('Комната найдена:', selectedRoom);
+        navigate(`lobby/${selectedRoom.id}`);
       } else {
-        setError('Ошибка при поиске комнаты');
+        setError('Комната с таким названием не найдена');
       }
     } catch (err) {
       console.error('Ошибка при запросе комнаты:', err);
       setError('Произошла ошибка. Попробуйте позже.');
-    };
-
-    setIsJoinModalOpen(false); 
+    } finally {
+      setIsJoinModalOpen(false);
+    }
   };
 
   const handleCreateRoom = () => {
@@ -99,105 +86,66 @@ const Main = () => {
       return;
     }
   
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-  
     try {
-      const response = await fetch('http://localhost:8000/api/create-room/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify({ name: roomName }),
-      });
-  
-      if (response.ok) {
-        setRoomName(''); 
-        setIsModalOpen(false); //
-          const selectedRoom = await response.json();
-          const selectedRoomID = selectedRoom.id;
-          navigate(`lobby/${selectedRoomID}`); 
-          console.log('ID созданной комнаты:', selectedRoomID);
-      }
+      const response = await apiClient.post('create-room/', { name: roomName });
+      setRoomName('');
+      setIsModalOpen(false);
+      const selectedRoomID = response.data.id;
+      navigate(`lobby/${selectedRoomID}`);
+      console.log('ID созданной комнаты:', selectedRoomID);
     } catch (err) {
       console.error('Ошибка при создании комнаты:', err);
       setError('Ошибка при создании комнаты');
     }
   };
   
+  
   const mergeRooms = (newRooms: Room[]) => {
     const updatedRooms = [...rooms];
-  
+
     newRooms.forEach((newRoom) => {
       const index = updatedRooms.findIndex((room) => room.name === newRoom.name);
       if (index >= 0) {
-        updatedRooms[index] = newRoom; 
+        updatedRooms[index] = newRoom;
       } else {
-        updatedRooms.push(newRoom); 
+        updatedRooms.push(newRoom);
       }
     });
-  
+
     setRooms(updatedRooms);
   };
-  
+
   useEffect(() => {
     const fetchRooms = async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token) return;
-  
       try {
-        const response = await fetch('http://localhost:8000/api/rooms/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Token ${token}`,
-          },
-        });
-  
-        if (response.ok) {
-          const data = await response.json();
-          mergeRooms(data); 
-        }
+        const response = await apiClient.get('rooms/');
+        mergeRooms(response.data);
       } catch (err) {
         console.error('Ошибка обновления комнат:', err);
       }
     };
-  
+
     fetchRooms();
     const interval = setInterval(fetchRooms, 10000);
-  
+
     return () => clearInterval(interval);
   }, []);
-
 
   const handleRoomClick = (roomId: BigInteger) => {
     setSelectedRoomId(selectedRoomId === roomId ? null : roomId);
   };
+
   const openCharacterModal = async (roomId: BigInteger) => {
-    const token = localStorage.getItem('authToken');
     const room = rooms.find((room) => room.id === roomId);
-    if (!token) return;
-  
+
     try {
-      const response = await fetch('http://localhost:8000/api/get-character/', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Token ${token}`,
-        },
-      });
-  
-      if (response.ok) {
-        if (room && token === room.master_token) {
-          // Если пользователь мастер комнаты, сразу направляем в комнату
-          navigate(`lobby/${roomId}`);
-        } else {
-        const data = await response.json();
-        setCharacters(data); // Устанавливаем список персонажей
-        setSelectedRoomId(roomId); // Устанавливаем текущую комнату
-        setIsCharacterModalOpen(true); // Открываем окно
-        }
+      const response = await apiClient.get('get-character/');
+      if (room && localStorage.getItem('authToken') === room.master_token) {
+        navigate(`lobby/${roomId}`);
+      } else {
+        setCharacters(response.data);
+        setSelectedRoomId(roomId);
+        setIsCharacterModalOpen(true);
       }
     } catch (err) {
       console.error('Ошибка при загрузке персонажей:', err);
@@ -206,23 +154,15 @@ const Main = () => {
 
   const joinRoomWithCharacter = async () => {
     if (!selectedCharacterId || !selectedRoomId) return;
-  
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-  
+
     try {
-      const response = await fetch(`http://localhost:8000/api/connect-room/${selectedRoomId}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify({ character_id: selectedCharacterId }),
+      const response = await apiClient.post(`connect-room/${selectedRoomId}/`, {
+        character_id: selectedCharacterId,
       });
-  
-      if (response.ok) {
-        setIsCharacterModalOpen(false); // Закрываем окно
-        navigate(`lobby/${selectedRoomId}`); // Переход в лобби
+
+      if (response.status === 200) {
+        setIsCharacterModalOpen(false);
+        navigate(`lobby/${selectedRoomId}`);
       } else {
         console.error('Ошибка при присоединении к комнате');
       }
@@ -230,6 +170,7 @@ const Main = () => {
       console.error('Ошибка при отправке запроса:', err);
     }
   };
+
   
   
 

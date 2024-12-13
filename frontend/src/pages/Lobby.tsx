@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Lobby.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
+import apiClient from '../apiClient';
 
 //interface Player {
   //id: number;
@@ -29,49 +30,31 @@ const Lobby: React.FC = () => {
     const fetchRoom = async () => {
       setLoading(true);
       setError(null);
-
-      const token = localStorage.getItem('authToken');
-      if (!token) {
-        setError('Пользователь не авторизован');
-        setLoading(false);
-        return;
-      }
-
+  
       try {
-        const response = await fetch('http://localhost:8000/api/rooms/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Token ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Ошибка: ${response.status}`);
-        }
-
-        const rooms = await response.json();
-        const selectedRoom = rooms.find((room: { id: number }) => room.id === parseInt(id || '0', 10));
-
+        const response = await apiClient.get("/rooms/");
+        const rooms = response.data;
+        const selectedRoom = rooms.find((room: { id: number }) => room.id === parseInt(id || "0", 10));
+  
         if (!selectedRoom) {
-          throw new Error('Комната не найдена');
+          throw new Error("Комната не найдена");
         }
-
+  
         setRoom(selectedRoom);
       } catch (err) {
-        setError('Не удалось загрузить данные комнаты');
         console.error(err);
+        setError("Не удалось загрузить данные комнаты");
       } finally {
         setLoading(false);
       }
     };
-
-
+  
     fetchRoom();
     const interval = setInterval(fetchRoom, 10000); // Обновляем данные комнаты каждые 10 секунд
-
+  
     return () => clearInterval(interval);
   }, [id]);
+  
 
   const handleStartGame = () => {
     if (!room) return;

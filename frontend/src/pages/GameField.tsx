@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './GameField.css';
+import ReactDOM from 'react-dom';
 
 interface Token {
   id: string;
@@ -43,19 +44,16 @@ const GameField: React.FC = () => {
     setNewTokenY(0);
     setNewTokenSize(1);
   };
-  const showContextMenu = (
-    event: React.MouseEvent<HTMLDivElement>,
-    tokenId: string
-  ) => {
+  const showContextMenu = (event: React.MouseEvent<HTMLDivElement>, tokenId: string) => {
     event.preventDefault();
-    const boundingRect = event.currentTarget.getBoundingClientRect();
     setContextMenu({
       visible: true,
-      x: event.clientX - boundingRect.left,
-      y: event.clientY - boundingRect.top,
+      x: event.clientX, 
+      y: event.clientY,
       tokenId,
     });
   };
+  
   const hideContextMenu = () => {
     setContextMenu({ visible: false, x: 0, y: 0, tokenId: null });
   };
@@ -183,22 +181,21 @@ const GameField: React.FC = () => {
                     <div className="token-content">
                       {token.name}
                     </div>
-                    {contextMenu.visible && (
-        <div
-          className="context-menu"
-          style={{
-            top: contextMenu.y,
-            left: contextMenu.x,
-          }}
-        >
-          <button onClick={() => handleContextMenuAction('delete')}>
-            Удалить
-          </button>
-          <button onClick={() => handleContextMenuAction('edit')}>
-            Редактировать
-          </button>
-        </div>
-      )}
+                    {contextMenu.visible && contextMenu.tokenId === token.id && (
+                       ReactDOM.createPortal(
+                        <div
+                          className="context-menu"
+                          style={{
+                            top: contextMenu.y,
+                            left: contextMenu.x,
+                          }}
+                        >
+                          <button onClick={() => handleContextMenuAction('delete')}>Удалить</button>
+                          <button onClick={() => handleContextMenuAction('edit')}>Редактировать</button>
+                        </div>,
+                        document.body 
+                      )
+                    )}
       {editingToken && (
   <div className="modal">
     <div className="modal-content">

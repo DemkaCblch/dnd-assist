@@ -73,7 +73,7 @@
     align-items: center;
     user-select: none;
     transition: transform 0.3s ease-in-out; /* Для анимации перемещения */
-    z-index: 10;
+    z-index: 1;
   }
   
   .token-content {
@@ -126,6 +126,7 @@
     background: none;
     padding: 5px 10px;
     text-align: left;
+    z-index: 100;
     cursor: pointer;
   }
   
