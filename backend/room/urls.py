@@ -13,7 +13,11 @@ urlpatterns = [
     path('api/connect-room/<int:room_id>/', JoinRoomAPIView.as_view(), name='join-room'),
 
     # Закрытие комнаты
-    path('api/close-room/<int:room_id>/', CloseRoomAPIView.as_view(), name='close-room'),
+    # path('api/close-room/<int:room_id>/', CloseRoomAPIView.as_view(), name='close-room'),
 
     path('api/get-info-room/<int:room_id>/', GetRoomInfoAPIView.as_view(), name='get-info-room'),
+
+    path('api/rooms/<int:room_id>/is_master/', GetAmIMaster.as_view(), name='is_master'),
+
+    path('testapi/', testapi, name='testapi'),
 ]

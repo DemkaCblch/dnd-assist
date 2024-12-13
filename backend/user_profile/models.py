@@ -28,6 +28,7 @@ class Character(models.Model):
 class CharacterStats(models.Model):
     id = models.AutoField(primary_key=True)
     hp = models.IntegerField()
+    mana = models.IntegerField()
     race = models.CharField(max_length=50)
     level = models.IntegerField()
     intelligence = models.IntegerField()

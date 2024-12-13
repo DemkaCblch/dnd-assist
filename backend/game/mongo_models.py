@@ -20,12 +20,13 @@ class MGEntity(Document):
     name = StringField(max_length=100, required=True)
     status = StringField(max_length=50, required=True)
     user_token = StringField(max_length=100)
-    meta = {'collection': 'entities'}  # Название коллекции в MongoDB
+    meta = {'collection': 'entities'}
 
 
 class MGCharacterStats(EmbeddedDocument):
     """Характеристики персонажа"""
     hp = IntField(required=True)
+    mana = IntField()
     race = StringField(max_length=50)
     intelligence = IntField()
     strength = IntField()
@@ -33,6 +34,9 @@ class MGCharacterStats(EmbeddedDocument):
     constitution = IntField()
     wisdom = IntField()
     charisma = IntField()
+    level = IntField()
+    resistance = IntField()
+    stability = IntField()
 
 
 class MGCharacter(Document):
@@ -40,10 +44,10 @@ class MGCharacter(Document):
     name = StringField(max_length=100, required=True)
     status = StringField(max_length=50)
     user_token = StringField(max_length=100)
-    stats = EmbeddedDocumentField(MGCharacterStats)  # Вложенные характеристики
+    stats = EmbeddedDocumentField(MGCharacterStats)
 
     meta = {
-        'collection': 'characters'  # Название коллекции в MongoDB
+        'collection': 'characters'
     }
 
 
@@ -69,11 +73,18 @@ class MGPlayerFigures(Document):
     }
 
 
+class MGItem(EmbeddedDocument):
+    """Элемент рюкзака"""
+    name = StringField(max_length=100, required=True)
+    description = StringField(max_length=500)
+
+
 class MGBackpack(Document):
-    """Рюкзак игра"""
-    user_token = StringField(max_length=100)
-    room_id = IntField()
-    items = ListField(StringField(), default=list)
+    """Рюкзак игрока"""
+    user_id = IntField(required=True)
+    room_id = IntField(required=True)
+    items = ListField(EmbeddedDocumentField(MGItem), default=list)
+
     meta = {
         'collection': 'backpacks'
     }
@@ -89,3 +100,12 @@ class MGRoom(Document):
     meta = {
         'collection': 'rooms'
     }
+
+
+class MGTable(Document):
+
+    height = IntField(required=True, min_value=0, verbose_name="Height (Высота)")
+    length = IntField(required=True, min_value=0, verbose_name="Length (Длина)")
+
+    def __str__(self):
+        return f"Dimensions (Height: {self.height}, Length: {self.length})"

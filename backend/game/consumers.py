@@ -2,235 +2,174 @@ import json
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from mongoengine import DoesNotExist
 from rest_framework.authtoken.models import Token
-from game.utils import transfer_game_data_to_mongodb
+
+from game.mongo_models import MGRoom, MGBackpack, MGItem
+#from game.utils import migrate_room_to_mongo
 from room.models import Room, PlayerInRoom
 
 
 class RoomConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # Проверяем авторизацию пользователя
-        user = self.scope.get("user", None)
-        token_key = self.scope.get("token", None)
+        """Обработка подключения клиента."""
+        user = self.scope.get("user")
+        token_key = self.scope.get("token")
 
         if not user or not user.is_authenticated:
             await self.close()
             return
 
-        # Извлекаем room_id из URL
         self.room_id = self.scope['url_route']['kwargs']['room_id']
         self.room_group_name = f"chat_{self.room_id}"
+        self.is_master = 'null'
 
         try:
-            # Проверяем, существует ли комната
-            room_exists = await self.check_room_exists(self.room_id)
-            if not room_exists:
-                print(f"Room with ID {self.room_id} not found.")
+            # Проверяем существование комнаты
+            if not await self._room_exists(self.room_id):
                 await self.close()
                 return
 
-            # Получаем токен мастера комнаты
-            master_token = await self.get_master_token(self.room_id)
-
-            # Проверяем, является ли пользователь мастером
-            is_master = (token_key == master_token)
-
-            # Если пользователь не мастер, проверяем статус комнаты
-            if not is_master:
-                room_status = await self.get_room_status(self.room_id)
-                if room_status != "Waiting":
-                    print(f"Room status is '{room_status}'. Joining is not allowed.")
+            master_token = await self._get_master_token(self.room_id)
+            master_token = str(master_token)
+            self.is_master = (token_key == master_token)
+            if not self.is_master:
+                if not await self._can_join_room(user, token_key, self.room_id):
                     await self.close()
                     return
+            # Добавляем пользователя в комнату
+            if not self.is_master:
+                await self._add_player(token_key, self.room_id)
 
-                # Если количество запусков больше или равно 1, проверяем, был ли пользователь в комнате
-                launches = await self.get_room_launches(self.room_id)
-                if launches >= 1:
-                    user_has_joined = await self.has_user_joined(token_key, self.room_id)
-                    if user_has_joined:
-                        print(f"User {user.username} has already joined this room.")
-                        await self.close()
-                        return
-
-            # Добавляем пользователя в PlayerInRoom
-            await self.add_player_to_room(user, token_key, self.room_id, is_master)
-
-            # Подключаем пользователя к группе WebSocket
+            # Подключаем клиента к WebSocket-группе
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
-
-            print(f"User {user.username} successfully connected to the room {self.room_id}.")
 
         except Exception as e:
             print(f"Connection error: {e}")
             await self.close()
 
     async def disconnect(self, close_code):
-        # Проверяем, если пользователь — мастер
-        if self.scope["user"].is_authenticated:
-            room_id = self.scope["url_route"]["kwargs"]["room_id"]
-            try:
-                room = await database_sync_to_async(Room.objects.get)(id=room_id)
-                master_token = self.get_master_token(room_id)
+        """Обработка отключения клиента."""
+        if self.is_master:
+            await self._handle_master_disconnect()
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
-                if master_token == self.scope["user"]:
-                    # Обновляем статус комнаты
-                    room.room_status = "Saved"
-                    await database_sync_to_async(room.save)()
+    async def receive(self, text_data):
+        """Обработка сообщений от клиента."""
+        data = json.loads(text_data)
+        action = data.get("action")
 
-                    # Удаляем всех игроков из комнаты
-                    await database_sync_to_async(PlayerInRoom.objects.filter(room=room).delete)()
-
-                    # Оповещаем игроков
-                    await self.channel_layer.group_send(
-                        f"room_{room_id}",
-                        {
-                            "type": "room_terminated",
-                            "message": "The game has been terminated because the master disconnected."
-                        }
-                    )
-            except Room.DoesNotExist:
-                pass
-
-        # Удаляем подключение из группы
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
-
-    async def get_room_status(self, room_id):
         try:
-            room = await sync_to_async(Room.objects.get)(id=room_id)
-            return room.room_status
-        except Room.DoesNotExist:
-            return None
+            if action == "start_game":
+                await self._start_game()
+            elif action == "resume_game":
+                await self._resume_game()
+            elif action == "add_item":
+                await self._add_item(data)
+            elif action == "remove_item":
+                await self._remove_item(data)
+            else:
+                await self.send(text_data=json.dumps({"message": "Unknown action."}))
+        except Exception as e:
+            await self.send(text_data=json.dumps({"error": str(e)}))
 
+    # === Методы для работы с комнатами ===
     @database_sync_to_async
-    def check_room_exists(self, room_id):
+    def _room_exists(self, room_id):
         return Room.objects.filter(id=room_id).exists()
 
-    async def get_room_launches(self, room_id):
-        room = await database_sync_to_async(Room.objects.get)(id=room_id)
-        return room.launches
-
     @database_sync_to_async
-    def has_user_joined(self, user, room_id):
-        player = PlayerInRoom.objects.filter(user_token=user, room_id=room_id).exists()
-        return player
-
-
-    @database_sync_to_async
-    def get_master_token(self, room_id):
+    def _get_master_token(self, room_id):
         room = Room.objects.get(id=room_id)
         return str(room.master_token)
 
-
     @database_sync_to_async
-    def add_player_to_room(self, user, token_key, room_id, is_master=False, character=None):
+    def _can_join_room(self, user, token_key, room_id):
         room = Room.objects.get(id=room_id)
-        token = Token.objects.get(key=token_key)
-
-        if is_master:
-            if room.master_token:
-                print(f"Room  {room_id} already has a master.")
-                return False
-            room.master_token = token.key
-            room.save()
-            print(f"Master {user.username} successfully added to the room {room_id}.")
-            return True
-
-        if PlayerInRoom.objects.filter(user_token=token, room=room).exists():
-            print(f"Player with the token {token_key} already in the room {room_id}.")
+        if room.room_status != "Waiting":
+            print(f"Player '{token_key}' can't join in room '{room_id}', status '{room.room_status}'!")
             return False
-
-        PlayerInRoom.objects.create(
-            user_token=token,
-            room=room,
-            character=character,
-            is_master=is_master
-        )
-        print(f"Игрок {user.username} successfully added to the room {room_id}.")
+        if room.launches >= 1 and PlayerInRoom.objects.filter(user_token=token_key, room_id=room_id).exists():
+            print(f"Player '{token_key}' can join in room '{room_id}, status '{room.room_status}'!")
+            return False
         return True
 
+    @database_sync_to_async
+    def _add_player(self, token_key, room_id):
+        token = Token.objects.get(key=token_key)
+        PlayerInRoom.objects.get_or_create(user_token=token, room_id=room_id, is_master=False)
 
-    async def receive(self, text_data):
-        data = json.loads(text_data)
-        action = data.get('action')
+    @database_sync_to_async
+    def _handle_master_disconnect(self):
+        room = Room.objects.get(id=self.room_id)
+        room.room_status = "Saved"
+        room.save()
+        PlayerInRoom.objects.filter(room=room).delete()
 
-        if action == "start_game":
-            room_id = self.room_id
-            user = self.scope["user"]
-
-            try:
-                # Получаем комнату с помощью sync_to_async
-                room = await sync_to_async(Room.objects.get)(id=room_id)
-
-                # Получаем токен мастера комнаты с помощью sync_to_async
-                master_token = await sync_to_async(lambda: str(room.master_token))()
-
-                # Получаем токен текущего пользователя
-                user_token = self.scope.get("token", None)
-
-                # Сравниваем токен мастера с токеном пользователя
-                if master_token != user_token:
-                    await self.send(text_data=json.dumps({
-                        'message': "You are not master."
-                    }))
-                    return
-
-            except Room.DoesNotExist:
-                await self.send(text_data=json.dumps({
-                    'message': "Room no find."
-                }))
-                return
-
-            # Проверяем количество игроков в комнате
-            players_in_room_qs = await sync_to_async(PlayerInRoom.objects.filter)(room=room)
-            players_count = await sync_to_async(players_in_room_qs.count)()
-            if players_count == 0:
-                await self.send(text_data=json.dumps({
-                    'message': "No have player to start."
-                }))
-                return
-            room.launches += 1
-            # Начинаем игру
-            await sync_to_async(transfer_game_data_to_mongodb)(room_id)
-
-            room.room_status = "In Progress"
-            room.save()
-
+    # === Методы для управления игровым процессом ===
+    async def _start_game(self):
+        room = await database_sync_to_async(Room.objects.get)(id=self.room_id)
+        if room.launches != -1:
+            master_token = await self._get_master_token(self.room_id)
+            if self.scope.get("token") != master_token:
+                raise ValueError("You are not the master.")
+            has_players = await database_sync_to_async(PlayerInRoom.objects.filter(room=room).exists)()
+            if not has_players:
+                raise ValueError("No players to start the game.")
+            #room.room_status = "In Progress"
+            #room.launches += 1
+            await database_sync_to_async(room.save)()
             await self.channel_layer.group_send(
                 self.room_group_name,
-                {
-                    'type': 'game_event',
-                    'message': f"Game start!"
-                }
+                {"type": "game_event", "message": "Game started!"}
             )
-        elif action == "resuming_game":
-            room_id = self.room_id
-            try:
-                # Получаем комнату
-                room = await sync_to_async(Room.objects.get)(id=room_id)
+            #await migrate_room_to_mongo(room_id=self.room_id)
+        else:
+            await self.channel_layer.group_send(self.room_group_name, {"type": "game_event",
+                                                                       "message": "The game has already been initialized!"}
+                                                )
 
-                # Проверяем статус комнаты
-                if room.room_status == "Saved":
-                    # Изменяем статус комнаты на "Waiting"
-                    room.room_status = "Waiting"
-                    await sync_to_async(room.save)()
+    async def _resume_game(self):
+        room = await database_sync_to_async(Room.objects.get)(id=self.room_id)
+        if room.room_status != "Saved":
+            raise ValueError("Game cannot be resumed.")
+        room.room_status = "Waiting"
+        await database_sync_to_async(room.save)()
+        await self.channel_layer.group_send(self.room_group_name, {"type": "game_event", "message": "Game resumed!"})
 
-                    await self.channel_layer.group_send(
-                        self.room_group_name,
-                        {
-                            'type': 'game_event',
-                            'message': "Game resumed! Room status is now 'Waiting'."
-                        }
-                    )
-                else:
-                    await self.send(text_data=json.dumps({
-                        'message': f"Cannot resume game. Room status is '{room.room_status}'."
-                    }))
+    # === Методы для работы с инвентарём ===
+    async def _add_item(self, data):
+        user_id = data["user_id"]
+        item_name = data["name"]
+        item_description = data["description"]
+        room = await database_sync_to_async(MGRoom.objects.get)(room_status="In Progress", user_token__contains=user_id)
+        backpack, _ = await database_sync_to_async(MGBackpack.objects.get_or_create)(user_id=user_id, room_id=room.id)
+        if any(item.name == item_name for item in backpack.items):
+            raise ValueError(f"Item '{item_name}' already exists.")
+        backpack.items.append(MGItem(name=item_name, description=item_description))
+        await database_sync_to_async(backpack.save)()
 
-            except Room.DoesNotExist:
-                await self.send(text_data=json.dumps({
-                    'message': "Room not found."
-                }))
+    async def _remove_item(self, data):
+        user_id = data["user_id"]
+        item_name = data["name"]
+        room = await database_sync_to_async(MGRoom.objects.get)(room_status="In Progress", user_token__contains=user_id)
+        backpack = await database_sync_to_async(MGBackpack.objects.get)(user_id=user_id, room_id=room.id)
+        initial_count = len(backpack.items)
+        backpack.items = [item for item in backpack.items if item.name != item_name]
+        if len(backpack.items) == initial_count:
+            raise ValueError(f"Item '{item_name}' not found.")
+        await database_sync_to_async(backpack.save)()
+
+    async def game_event(self, event):
+        # Логика обработки события game_event
+        message = event.get("message", "No message provided")
+        current_turn = event.get("current_turn", None)
+
+        # Отправляем данные обратно клиенту
+        await self.send(text_data=json.dumps({
+            "type": "game_event",
+            "message": message,
+        }))
+
+

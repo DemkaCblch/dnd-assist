@@ -80,15 +80,14 @@ DATABASES = {
     }
 }
 
-
 connect(
     db='DNDAssist',
     username='admin',
     password='admin',
     host='localhost',
-    port=27017
+    port=27017,
+    uuidRepresentation="standard"
 )
-
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

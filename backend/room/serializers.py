@@ -1,6 +1,6 @@
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
-from room.models import Room
+from room.models import Room, PlayerInRoom
 from user_profile.models import Character
 
 
@@ -44,20 +44,31 @@ class JoinRoomSerializer(serializers.Serializer):
         attrs['is_master'] = str(room.master_token) == str(token)
 
         if not attrs['is_master']:
+            # Проверяем, если указан character_id, то валидируем его
             character_id = attrs.get('character_id')
-            if not character_id:
-                raise serializers.ValidationError("Character ID is required for players")
-
-            try:
-                character = Character.objects.get(id=character_id, user_token=str(token))
-                attrs['character'] = character
-            except Character.DoesNotExist:
-                raise serializers.ValidationError("Character not found or does not belong to the user")
+            if character_id:
+                try:
+                    character = Character.objects.get(id=character_id, user_token=str(token))
+                    attrs['character'] = character
+                except Character.DoesNotExist:
+                    raise serializers.ValidationError("Character not found or does not belong to the user")
 
         return attrs
+
+
+
 
 
 class RoomInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ['id', 'name', 'room_status']
+
+class GetAmIMasterSerializer(serializers.Serializer):
+    room_id = serializers.IntegerField(required=True)
+    user_token = serializers.CharField(required=True, max_length=255)
+
+    def validate_user_token(self, value):
+        if not value:
+            raise serializers.ValidationError("Token is required.")
+        return value
