@@ -7,6 +7,9 @@ from rest_framework.reverse import reverse
 from user_profile.models import Character, CharacterStats
 from room.models import Room, PlayerInRoom, Chat
 from rest_framework.test import APITestCase
+from django.test import TestCase
+from mongoengine import connect, disconnect
+
 
 
 class RoomAPITests(APITestCase):
@@ -225,3 +228,6 @@ class ChatModelTest(TestCase):
             room=self.room
         )
         self.assertEqual(str(chat), f"Chat object ({chat.id})")
+
+
+

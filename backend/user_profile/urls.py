@@ -15,7 +15,7 @@ urlpatterns = [
     # Создание персонажа
     path('api/create-character/', CreateCharacterAPIView.as_view(), name='create-character'),
 
-    # Получение персонажа
+    # Получение персонажей
     path('api/get-character/', GetCharacterAPIView.as_view(), name='get-character'),
 
     path('api/create-entity/', CreateEntityAPIView.as_view(), name='create_entity'),

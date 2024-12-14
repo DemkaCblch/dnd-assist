@@ -6,7 +6,7 @@ from mongoengine import DoesNotExist
 from rest_framework.authtoken.models import Token
 
 from game.mongo_models import MGRoom, MGBackpack, MGItem
-#from game.utils import migrate_room_to_mongo
+from game.utils import migrate_room_to_mongo
 from room.models import Room, PlayerInRoom
 
 
@@ -37,9 +37,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 if not await self._can_join_room(user, token_key, self.room_id):
                     await self.close()
                     return
-            # Добавляем пользователя в комнату
-            if not self.is_master:
-                await self._add_player(token_key, self.room_id)
 
             # Подключаем клиента к WebSocket-группе
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
@@ -90,8 +87,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
         if room.room_status != "Waiting":
             print(f"Player '{token_key}' can't join in room '{room_id}', status '{room.room_status}'!")
             return False
-        if room.launches >= 1 and PlayerInRoom.objects.filter(user_token=token_key, room_id=room_id).exists():
-            print(f"Player '{token_key}' can join in room '{room_id}, status '{room.room_status}'!")
+        if not PlayerInRoom.objects.filter(user_token=token_key, room_id=room_id).exists():
+            print(f"Player '{token_key}' can join in room '{room_id}', status '{room.room_status}'!")
             return False
         return True
 
@@ -117,14 +114,14 @@ class RoomConsumer(AsyncWebsocketConsumer):
             has_players = await database_sync_to_async(PlayerInRoom.objects.filter(room=room).exists)()
             if not has_players:
                 raise ValueError("No players to start the game.")
-            #room.room_status = "In Progress"
-            #room.launches += 1
+            room.room_status = "In Progress"
+            room.launches += 1
             await database_sync_to_async(room.save)()
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {"type": "game_event", "message": "Game started!"}
             )
-            #await migrate_room_to_mongo(room_id=self.room_id)
+            await migrate_room_to_mongo(room_id=self.room_id)
         else:
             await self.channel_layer.group_send(self.room_group_name, {"type": "game_event",
                                                                        "message": "The game has already been initialized!"}
@@ -164,12 +161,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def game_event(self, event):
         # Логика обработки события game_event
         message = event.get("message", "No message provided")
-        current_turn = event.get("current_turn", None)
 
         # Отправляем данные обратно клиенту
         await self.send(text_data=json.dumps({
             "type": "game_event",
             "message": message,
         }))
-
-

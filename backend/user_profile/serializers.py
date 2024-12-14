@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 class CharacterStatsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CharacterStats
-        fields = ['hp', 'race', 'level', 'intelligence', 'strength', 'dexterity', 'constitution', 'wisdom',
+        fields = ['hp', 'mana', 'race', 'level', 'intelligence', 'strength', 'dexterity', 'constitution', 'wisdom',
                   'resistance', 'stability', 'charisma']
 
 

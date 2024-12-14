@@ -18,12 +18,11 @@ class CreateRoomSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
     def create(self, validated_data):
-        # Получаем или создаем токен для текущего пользователя
         user = self.context['request'].user
         token = Token.objects.get_or_create(user=user)[0]  # Получаем токен пользователя
 
-        validated_data['master_token'] = token  # Сохраняем токен в master_token
-        validated_data['room_status'] = 'Waiting'  # Устанавливаем статус комнаты по умолчанию
+        validated_data['master_token'] = token
+        validated_data['room_status'] = 'Waiting'
 
         return super().create(validated_data)
 
@@ -44,7 +43,6 @@ class JoinRoomSerializer(serializers.Serializer):
         attrs['is_master'] = str(room.master_token) == str(token)
 
         if not attrs['is_master']:
-            # Проверяем, если указан character_id, то валидируем его
             character_id = attrs.get('character_id')
             if character_id:
                 try:
@@ -56,13 +54,11 @@ class JoinRoomSerializer(serializers.Serializer):
         return attrs
 
 
-
-
-
 class RoomInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ['id', 'name', 'room_status']
+
 
 class GetAmIMasterSerializer(serializers.Serializer):
     room_id = serializers.IntegerField(required=True)

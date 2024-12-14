@@ -18,6 +18,4 @@ urlpatterns = [
     path('api/get-info-room/<int:room_id>/', GetRoomInfoAPIView.as_view(), name='get-info-room'),
 
     path('api/rooms/<int:room_id>/is_master/', GetAmIMaster.as_view(), name='is_master'),
-
-    path('testapi/', testapi, name='testapi'),
 ]

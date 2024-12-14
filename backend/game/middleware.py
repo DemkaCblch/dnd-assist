@@ -15,7 +15,6 @@ def get_user(token_key):
         return AnonymousUser()
 
 
-
 # Определение пользователя по токену до подключения к WS
 class TokenAuthMiddleware(BaseMiddleware):
     def __init__(self, inner):
@@ -31,13 +30,12 @@ class TokenAuthMiddleware(BaseMiddleware):
             user = await get_user(token_key)
             if user.is_authenticated:
                 scope['user'] = user
-                scope['token'] = token_key  # Добавляем токен в scope
+                scope['token'] = token_key
             else:
                 scope['user'] = AnonymousUser()
-                scope['token'] = None  # Если пользователь не найден, то токен будет None
+                scope['token'] = None
         else:
             scope['user'] = AnonymousUser()
-            scope['token'] = None  # Если токен не передан, то токен будет None
+            scope['token'] = None
 
         return await super().__call__(scope, receive, send)
-
