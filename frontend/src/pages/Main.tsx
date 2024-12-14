@@ -3,36 +3,45 @@ import './Main.css';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 import Lobby from './Lobby';
+import apiClient from '../apiClient';
 
 interface Room {
   id: BigInteger;
   name: string;
   room_status: string;
+  master_token: string;
 }
 
 const Main = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  const [rooms, setRooms] = useState<Room[]>([]); // Список комнат
-  const [loading, setLoading] = useState<boolean>(true); // Состояние загрузки
-  const [error, setError] = useState<string | null>(null); // Ошибка при запросе
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Состояние для модального окна
-  const [roomName, setRoomName] = useState<string>(''); // Название комнаты
-  const [joinRoomName, setJoinRoomName] = useState<string>(''); // Название комнаты для присоединения
-  const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false); // Модальное окно для присоединения
+  const [rooms, setRooms] = useState<Room[]>([]); 
+  const [error, setError] = useState<string | null>(null); //
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [roomName, setRoomName] = useState<string>(''); //
+  const [joinRoomName, setJoinRoomName] = useState<string>(''); // 
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false); //  
+  const [hoveredRoomId, setHoveredRoomId] = useState<BigInteger | null>(null);
+  const [selectedRoomId, setSelectedRoomId] = useState<BigInteger | null>(null);
+  const [characters, setCharacters] = useState<any[]>([]); // Список персонажей пользователя
+  const [isCharacterModalOpen, setIsCharacterModalOpen] = useState<boolean>(false); // Статус окна выбора персонажей
+  const [selectedCharacterId, setSelectedCharacterId] = useState<number | null>(null); // Выбранный персонаж
+
+
+
 
   const handleOpenJoinModal = () => {
-    setIsJoinModalOpen(true); // Открываем модальное окно для присоединения
+    setIsJoinModalOpen(true); //
   };
 
   const handleCloseJoinModal = () => {
-    setIsJoinModalOpen(false); // Закрываем модальное окно для присоединения
-    setJoinRoomName(''); // Сбрасываем ввод
+    setIsJoinModalOpen(false); //   
+    setJoinRoomName(''); // 
   };
 
   const handleJoinRoomNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJoinRoomName(e.target.value); // Обновляем название комнаты для присоединения
+    setJoinRoomName(e.target.value); 
   };
 
   const handleJoinRoomSubmit = async () => {
@@ -41,50 +50,34 @@ const Main = () => {
       return;
     }
 
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-
     try {
-      const response = await fetch(`http://localhost:8000/api/rooms/`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Token ${token}`,
-        },
-      });
+      const response = await apiClient.get('rooms/');
+      const selectedRoom = response.data.find((room: Room) => room.name === joinRoomName);
 
-      if (response.ok) {
-        const room = await response.json();
-        const selectedRoom = rooms.find((room: { name: string }) => room.name === joinRoomName);
-        if(selectedRoom){
-          console.log('Комната найдена:', room);
-
-          // Переход в комнату
-          navigate(`lobby/${selectedRoom.id}`);
-        }
-      } else if (response.status === 404) {
-        setError('Комната с таким названием не найдена');
+      if (selectedRoom) {
+        console.log('Комната найдена:', selectedRoom);
+        navigate(`lobby/${selectedRoom.id}`);
       } else {
-        setError('Ошибка при поиске комнаты');
+        setError('Комната с таким названием не найдена');
       }
     } catch (err) {
       console.error('Ошибка при запросе комнаты:', err);
       setError('Произошла ошибка. Попробуйте позже.');
-    };
-
-    setIsJoinModalOpen(false); // Закрываем модальное окно
+    } finally {
+      setIsJoinModalOpen(false);
+    }
   };
 
   const handleCreateRoom = () => {
-    setIsModalOpen(true); // Открываем модальное окно
+    setIsModalOpen(true); 
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false); // Закрываем модальное окно
+    setIsModalOpen(false); 
   };
 
   const handleRoomNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRoomName(e.target.value); // Обновляем название комнаты
+    setRoomName(e.target.value); 
   };
 
   const handleSubmitRoom = async () => {
@@ -93,94 +86,93 @@ const Main = () => {
       return;
     }
   
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-  
     try {
-      const response = await fetch('http://localhost:8000/api/create-room/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify({ name: roomName }),
-      });
-  
-      if (response.ok) {
-        setRoomName(''); // Сбрасываем поле для названия
-        setIsModalOpen(false); // Закрываем модальное окно
-  
-        const roomsResponse = await fetch('http://localhost:8000/api/rooms/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Token ${token}`,
-          },
-        });
-  
-        const rooms = await roomsResponse.json();
-        const selectedRoom = rooms.find((room: { name: string }) => room.name === roomName);
-  
-        if (selectedRoom) {
-          const selectedRoomID = selectedRoom.id;
-          navigate(`lobby/${selectedRoomID}`); // Используем шаблонные строки
-          console.log('ID созданной комнаты:', selectedRoomID);
-        }
-      }
+      const response = await apiClient.post('create-room/', { name: roomName });
+      setRoomName('');
+      setIsModalOpen(false);
+      const selectedRoomID = response.data.id;
+      navigate(`lobby/${selectedRoomID}`);
+      console.log('ID созданной комнаты:', selectedRoomID);
     } catch (err) {
       console.error('Ошибка при создании комнаты:', err);
       setError('Ошибка при создании комнаты');
     }
   };
   
+  
   const mergeRooms = (newRooms: Room[]) => {
     const updatedRooms = [...rooms];
-  
+
     newRooms.forEach((newRoom) => {
       const index = updatedRooms.findIndex((room) => room.name === newRoom.name);
       if (index >= 0) {
-        updatedRooms[index] = newRoom; // Обновляем существующую комнату
+        updatedRooms[index] = newRoom;
       } else {
-        updatedRooms.push(newRoom); // Добавляем новую комнату
+        updatedRooms.push(newRoom);
       }
     });
-  
+
     setRooms(updatedRooms);
   };
-  
+
   useEffect(() => {
     const fetchRooms = async () => {
-      const token = localStorage.getItem('authToken');
-      if (!token) return;
-  
       try {
-        const response = await fetch('http://localhost:8000/api/rooms/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Token ${token}`,
-          },
-        });
-  
-        if (response.ok) {
-          const data = await response.json();
-          mergeRooms(data); // Обновляем список через слияние
-        }
+        const response = await apiClient.get('rooms/');
+        mergeRooms(response.data);
       } catch (err) {
         console.error('Ошибка обновления комнат:', err);
       }
     };
-  
+
     fetchRooms();
     const interval = setInterval(fetchRooms, 10000);
-  
+
     return () => clearInterval(interval);
   }, []);
 
-  
-  const handleJoinRoom = () => {
-    isAuthenticated ? console.log('Присоединиться к комнате') : navigate('/login');
+  const handleRoomClick = (roomId: BigInteger) => {
+    setSelectedRoomId(selectedRoomId === roomId ? null : roomId);
   };
+
+  const openCharacterModal = async (roomId: BigInteger) => {
+    const room = rooms.find((room) => room.id === roomId);
+
+    try {
+      const response = await apiClient.get('get-character/');
+      if (room && localStorage.getItem('authToken') === room.master_token) {
+        navigate(`lobby/${roomId}`);
+      } else {
+        setCharacters(response.data);
+        setSelectedRoomId(roomId);
+        setIsCharacterModalOpen(true);
+      }
+    } catch (err) {
+      console.error('Ошибка при загрузке персонажей:', err);
+    }
+  };
+
+  const joinRoomWithCharacter = async () => {
+    if (!selectedCharacterId || !selectedRoomId) return;
+
+    try {
+      const response = await apiClient.post(`connect-room/${selectedRoomId}/`, {
+        character_id: selectedCharacterId,
+      });
+
+      if (response.status === 200) {
+        setIsCharacterModalOpen(false);
+        navigate(`lobby/${selectedRoomId}`);
+      } else {
+        console.error('Ошибка при присоединении к комнате');
+      }
+    } catch (err) {
+      console.error('Ошибка при отправке запроса:', err);
+    }
+  };
+
+  
+  
 
   return (
     <div className="MainBase">
@@ -228,6 +220,55 @@ const Main = () => {
         </div>
       )}
 
+      {isCharacterModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button className="modal-close-button" onClick={() => setIsCharacterModalOpen(false)}>
+              ×
+            </button>
+            <h2>Выберите персонажа</h2>
+            {characters.length > 0 ? (
+              <ul>
+                {characters.map((character) => (
+                  <li
+                    key={character.id}
+                    onClick={() => setSelectedCharacterId(character.id)}
+                    style={{
+                      cursor: 'pointer',
+                      margin: '10px 0',
+                      padding: '5px',
+                      backgroundColor: selectedCharacterId === character.id ? '#4CAF50' : '#f1f1f1',
+                      color: selectedCharacterId === character.id ? 'white' : 'black',
+                      borderRadius: '5px',
+                    }}
+                  >
+                    {character.name} (Уровень: {character.character_stats.level})
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>Нет доступных персонажей</p>
+            )}
+            <button
+              onClick={joinRoomWithCharacter}
+              style={{
+                marginTop: '10px',
+                padding: '10px 20px',
+                backgroundColor: '#4CAF50',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+              }}
+              disabled={!selectedCharacterId}
+            >
+              Присоединиться
+            </button>
+          </div>
+        </div>
+      )}
+
+
 
       <header className="header">
         <h1 className="title">Добро пожаловать на D&D-Assist</h1>
@@ -249,12 +290,39 @@ const Main = () => {
           <p className="error">{error}</p>
         ) : rooms.length > 0 ? (
           <ul>
-            {rooms.map((room, index) => (
-              <li key={index}>
-                <strong>{room.name}</strong> - {room.room_status}
+            {rooms.map((room) => (
+              <li
+                key={room.id.toString()}
+                onClick={() => handleRoomClick(room.id)}
+                className="room-item"
+                style={{ cursor: 'pointer', marginBottom: '10px' }}
+              >
+                <div>
+                  <strong>{room.name}</strong> - {room.room_status}
+                </div>
+                {selectedRoomId === room.id && (
+                  <button
+                    className="join-room-button"
+                    onClick={() => openCharacterModal(room.id)}
+                    style={{
+                      marginTop: '5px',
+                      padding: '5px 10px',
+                      backgroundColor: '#4CAF50',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '5px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Присоединиться
+                  </button>
+                )}
+
               </li>
             ))}
           </ul>
+
+
         ) : (
           <p>Нет доступных комнат</p>
         )}

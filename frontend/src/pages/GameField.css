@@ -1,20 +1,4 @@
-.game-field {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    grid-template-rows: repeat(10, 1fr);
-    width: 500px;
-    height: 500px;
-    border: 2px solid #444;
-    background-color: #eee;
-  }
-  
-  .grid-cell {
-    border: 1px solid #ccc;
-    position: relative;
-    justify-content: center;
-    align-items: center;
-    display: flex;
-  }
+
   
   
   .token:active {
@@ -83,38 +67,70 @@
   .token {
     position: absolute;
     background-color: rgba(0, 128, 255, 0.7);
-    border: 1px solid #0077cc;
-    box-sizing: border-box;
+    border: 2px solid #005f99;
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
     user-select: none;
-    transition: transform 0.2s ease; /* Для плавности анимации */
+    transition: transform 0.3s ease-in-out; /* Для анимации перемещения */
+    z-index: 1;
   }
   
   .token-content {
     text-align: center;
+    color: white;
+      z-index: 1; /* Убедитесь, что текст остаётся поверх контекстного меню */
+      white-space: nowrap; /* Предотвращает перенос текста */
+      text-overflow: ellipsis; /* Показывает "..." если текст не помещается */
+      overflow: hidden; /* Скрывает лишний текст */
   }
   
-  .remove-token-btn {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: transparent;
-    border: none;
-    color: white;
-    cursor: pointer;
-    font-size: 14px;
-  }
+  
   
   
   .token:hover {
     background-color: #0056b3;
   }
+
   
+  .game-field {
+    display: grid;
+    border: 1px solid black;
+    margin: 20px auto;
+    position: relative;
+    background-image: url('C:\Users\bobra\Desktop\Ucheba\git\dnd-assist\frontend\public\one-piece-sanji.gif');
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
   
-  .token:hover .remove-token-btn {
+  .grid-cell {
+    border: 1px solid #ddd;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .context-menu {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 5px;
+    z-index: 100;
+  }
+  
+  .context-menu button {
     display: block;
+    width: 100%;
+    border: none;
+    background: none;
+    padding: 5px 10px;
+    text-align: left;
+    z-index: 100;
+    cursor: pointer;
+  }
+  
+  .context-menu button:hover {
+    background-color: #f0f0f0;
   }
   

@@ -15,7 +15,7 @@ function Navbar() {
         </Link>
       </div>
       <div className="nav-right">
-        <Link to="/admin">
+        <Link to="/profile">
           <img src="/assets/icons/admin-icon.png" className="icon" /> Admin
         </Link>
         <Link to="/characters"> Characters</Link>
