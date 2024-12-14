@@ -8,6 +8,7 @@ class Room(models.Model):
     name = models.CharField(max_length=50)
     room_status = models.CharField(max_length=50)
     master_token = models.ForeignKey(Token, on_delete=models.CASCADE, related_name='rooms')
+    mongo_room_id = models.CharField()
     launches = models.IntegerField(default=0)
 
 
@@ -17,6 +18,7 @@ class PlayerInRoom(models.Model):
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='players_in_room')
     character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='players_in_room', null=True,
                                   blank=True)
+    websocket_channel_id = models.CharField()
     is_master = models.BooleanField(default=False)
 
 

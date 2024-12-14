@@ -1,3 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied, NotFound
@@ -5,6 +7,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from game.mongo_models import MGRoom
 from room.models import Room, PlayerInRoom
 from room.serializers import GetRoomSerializer, CreateRoomSerializer, JoinRoomSerializer, RoomInfoSerializer, \
     GetAmIMasterSerializer
@@ -99,8 +102,58 @@ class GetRoomInfoAPIView(APIView):
         return Response(serializer.data, status=200)
 
 
+class DeleteRoomAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, room_id, *args, **kwargs):
+        try:
+            auth_header = request.headers.get('Authorization')
+            if not auth_header or not auth_header.startswith('Token '):
+                return Response(
+                    {'error': 'Token not provided or invalid.'},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            token = auth_header.split(' ')[1]
+
+            room = Room.objects.get(id=room_id)
+
+            if room.master_token_id != token:
+                return Response(
+                    {'error': 'You are not the master of this room.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            if room.mongo_room_id:
+                mongoRoom = MGRoom.objects.get(id=room.mongo_room_id)
+                mongoRoom.delete()
+
+            with transaction.atomic():
+                # Delete records from PlayerInRoom associated with this room
+                PlayerInRoom.objects.filter(room_id=room.id).delete()
+
+                room.delete()
+
+            return Response(
+                {'message': 'Room and related data successfully deleted.'},
+                status=status.HTTP_200_OK
+            )
+
+        except ObjectDoesNotExist:
+            return Response(
+                {'error': 'Room with the specified ID not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'error': f'An error occurred: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+
 class GetAmIMaster(APIView):
     """API для проверки, является ли пользователь мастером комнаты."""
+
     def get(self, request, room_id, *args, **kwargs):
         user_token = request.headers.get('Authorization')
 

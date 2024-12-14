@@ -6,11 +6,15 @@ from mongoengine import DoesNotExist
 from rest_framework.authtoken.models import Token
 
 from game.mongo_models import MGRoom, MGBackpack, MGItem
-from game.utils import migrate_room_to_mongo
+from game.utils import migrate_room_to_mongo, _fetch_room_data
 from room.models import Room, PlayerInRoom
 
 
 class RoomConsumer(AsyncWebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(args, kwargs)
+        self.mongo_room_id = None
+
     async def connect(self):
         """Обработка подключения клиента."""
         user = self.scope.get("user")
@@ -37,6 +41,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 if not await self._can_join_room(user, token_key, self.room_id):
                     await self.close()
                     return
+                await self._set_player_ws_channel(token_key, self.room_id, self.channel_name)
 
             # Подключаем клиента к WebSocket-группе
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
@@ -88,14 +93,17 @@ class RoomConsumer(AsyncWebsocketConsumer):
             print(f"Player '{token_key}' can't join in room '{room_id}', status '{room.room_status}'!")
             return False
         if not PlayerInRoom.objects.filter(user_token=token_key, room_id=room_id).exists():
-            print(f"Player '{token_key}' can join in room '{room_id}', status '{room.room_status}'!")
+            print(f"Player '{token_key}' can join in room '{room_id}', player doesn't exist!")
             return False
         return True
 
     @database_sync_to_async
-    def _add_player(self, token_key, room_id):
+    def _set_player_ws_channel(self, token_key, room_id, channel_name):
         token = Token.objects.get(key=token_key)
-        PlayerInRoom.objects.get_or_create(user_token=token, room_id=room_id, is_master=False)
+        player = PlayerInRoom.objects.get(user_token=token, room_id=room_id)
+        if not player.websocket_channel_id:
+            player.websocket_channel_id = channel_name
+            player.save()
 
     @database_sync_to_async
     def _handle_master_disconnect(self):
@@ -114,14 +122,16 @@ class RoomConsumer(AsyncWebsocketConsumer):
             has_players = await database_sync_to_async(PlayerInRoom.objects.filter(room=room).exists)()
             if not has_players:
                 raise ValueError("No players to start the game.")
-            room.room_status = "In Progress"
-            room.launches += 1
+            # room.room_status = "In Progress"
+            # room.launches += 1
             await database_sync_to_async(room.save)()
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {"type": "game_event", "message": "Game started!"}
             )
-            await migrate_room_to_mongo(room_id=self.room_id)
+            self.mongo_room_id = await migrate_room_to_mongo(room_id=self.room_id)
+            # Отослать всем игрокам информацию об игре
+            await self._send_room_data(self.mongo_room_id)
         else:
             await self.channel_layer.group_send(self.room_group_name, {"type": "game_event",
                                                                        "message": "The game has already been initialized!"}
@@ -167,3 +177,25 @@ class RoomConsumer(AsyncWebsocketConsumer):
             "type": "game_event",
             "message": message,
         }))
+
+    async def room_data_broadcast(self, event):
+        room_data = event["room_data"]
+        await self.send(text_data=json.dumps({
+            "type": "room_data",
+            "data": room_data
+        }))
+
+    async def _send_room_data(self, mongo_room_id):
+        """Отправляет данные комнаты всем участникам."""
+        try:
+            room_data = await database_sync_to_async(_fetch_room_data)(mongo_room_id)
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "room_data_broadcast",
+                    "room_data": room_data
+                }
+            )
+        except Exception as e:
+            print(f"Error sending room data: {e}")
