@@ -9,7 +9,6 @@ interface Room {
   id: BigInteger;
   name: string;
   room_status: string;
-  master_token: string;
 }
 
 const Main = () => {
@@ -44,7 +43,7 @@ const Main = () => {
     setJoinRoomName(e.target.value); 
   };
 
-  const handleJoinRoomSubmit = async () => {
+ /* const handleJoinRoomSubmit = async () => {
     if (!joinRoomName) {
       setError('Введите название комнаты для присоединения');
       return;
@@ -66,7 +65,7 @@ const Main = () => {
     } finally {
       setIsJoinModalOpen(false);
     }
-  };
+  }; */
 
   const handleCreateRoom = () => {
     setIsModalOpen(true); 
@@ -91,8 +90,18 @@ const Main = () => {
       setRoomName('');
       setIsModalOpen(false);
       const selectedRoomID = response.data.id;
-      navigate(`lobby/${selectedRoomID}`);
       console.log('ID созданной комнаты:', selectedRoomID);
+  
+      // Подключение к WebSocket после создания комнаты
+     /* const token = localStorage.getItem('authToken');
+      if (token) {
+        const ws = new WebSocket(`ws://localhost:8000/ws/room/${selectedRoomID}/?token=${token}`);
+        ws.onopen = () => console.log('WebSocket соединение установлено для комнаты:', selectedRoomID);
+        ws.onerror = (error) => console.error('Ошибка WebSocket:', error);
+        ws.onclose = () => console.log('WebSocket соединение закрыто');
+      }*/
+      apiClient.post(`connect-room/${selectedRoomID}/`)
+      navigate(`lobby/${selectedRoomID}`);
     } catch (err) {
       console.error('Ошибка при создании комнаты:', err);
       setError('Ошибка при создании комнаты');
@@ -136,32 +145,47 @@ const Main = () => {
   };
 
   const openCharacterModal = async (roomId: BigInteger) => {
-    const room = rooms.find((room) => room.id === roomId);
-
     try {
-      const response = await apiClient.get('get-character/');
-      if (room && localStorage.getItem('authToken') === room.master_token) {
+      const { data } = await apiClient.get(`rooms/${roomId}/is_master/`);
+  
+      if (data.is_master) {
+
+        const token = localStorage.getItem('authToken');
+       await apiClient.post(`connect-room/${roomId}/`);
         navigate(`lobby/${roomId}`);
       } else {
+        const response = await apiClient.get('get-character/');
         setCharacters(response.data);
         setSelectedRoomId(roomId);
         setIsCharacterModalOpen(true);
       }
     } catch (err) {
-      console.error('Ошибка при загрузке персонажей:', err);
+      console.error('Ошибка при проверке статуса мастера или загрузке персонажей:', err);
     }
   };
+  
+  
 
   const joinRoomWithCharacter = async () => {
     if (!selectedCharacterId || !selectedRoomId) return;
-
+  
     try {
       const response = await apiClient.post(`connect-room/${selectedRoomId}/`, {
         character_id: selectedCharacterId,
       });
-
+  
       if (response.status === 200) {
         setIsCharacterModalOpen(false);
+  
+        // Подключение к WebSocket после присоединения к комнате
+        const token = localStorage.getItem('authToken');
+        if (token) {
+          /*const ws = new WebSocket(`ws://localhost:8000/ws/room/${selectedRoomId}/?token=${token}`);
+          ws.onopen = () => console.log('WebSocket соединение установлено для комнаты:', selectedRoomId);
+          ws.onerror = (error) => console.error('Ошибка WebSocket:', error);
+          ws.onclose = () => console.log('WebSocket соединение закрыто');*/
+        }
+  
         navigate(`lobby/${selectedRoomId}`);
       } else {
         console.error('Ошибка при присоединении к комнате');
@@ -199,7 +223,7 @@ const Main = () => {
         </div>
       )}
 
-      {isJoinModalOpen && (
+      {/* {isJoinModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <button className="modal-close-button" onClick={handleCloseJoinModal}>
@@ -218,7 +242,7 @@ const Main = () => {
             {error && <p className="error">{error}</p>}
           </div>
         </div>
-      )}
+      )}  */}
 
       {isCharacterModalOpen && (
         <div className="modal-overlay">
@@ -280,9 +304,9 @@ const Main = () => {
         <button className="btn create-room" onClick={handleCreateRoom}>
           Создать комнату
         </button>
-        <button className="btn join-room" onClick={handleOpenJoinModal}>
+        {/*<button className="btn join-room" onClick={handleOpenJoinModal}>
           Присоединиться к комнате
-        </button>
+        </button>*/}
       </div>
       <div className="rooms-list">
         <h2>Доступные комнаты:</h2>

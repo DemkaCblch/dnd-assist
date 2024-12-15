@@ -48,11 +48,11 @@ class JoinRoomAPIView(APIView):
 
         if is_master:
             # Мастер может войти при любом статусе комнаты
-            PlayerInRoom.objects.get_or_create(
-                user_token=token,
-                room=room,
-                character=None  # Мастер комнаты не привязывается к персонажу
-            )
+            # PlayerInRoom.objects.get_or_create(
+            #     user_token=token,
+            #     room=room,
+            #     character=None  # Мастер комнаты не привязывается к персонажу
+            # )
             return Response({"detail": "Master connected to the room"}, status=200)
 
         # Игрок может войти только если комната в статусе "Waiting"
