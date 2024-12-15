@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'storages',
     'djoser',
     'rest_framework.authtoken',
+    'django_celery_results',
     'site_backend',
     'game',
     'room',
@@ -122,8 +123,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Настройка Celery для работы с RabbitMQ
-CELERY_BROKER_URL = 'amqp://localhost'
-CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379/0'
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'

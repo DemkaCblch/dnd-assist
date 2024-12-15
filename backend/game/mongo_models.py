@@ -44,7 +44,7 @@ class MGCharacterStats(EmbeddedDocument):
 
 class MGItem(EmbeddedDocument):
     id = StringField(primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = StringField(max_length=100, required=True)
+    name = StringField(max_length=100)
     description = StringField(max_length=500)
 
 
