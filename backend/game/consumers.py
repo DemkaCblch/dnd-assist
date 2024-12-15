@@ -220,6 +220,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def handler_change_turn_send_info(self, event):
         character_name = event["name"]
         await self.send(text_data=json.dumps({
-            "type": "room_data",
+            "type": "change_turn",
             "name": character_name
         }))
