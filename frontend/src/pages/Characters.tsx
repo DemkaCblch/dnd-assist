@@ -5,6 +5,7 @@ import apiClient from "../apiClient";
 interface CharacterStats {
   hp: number;
   race: string;
+  mana: number;
   level: number;
   intelligence: number;
   strength: number;
@@ -44,6 +45,7 @@ const Profile = () => {
       hp: 100,
       race: "",
       level: 1,
+      mana: 5,
       intelligence: 10,
       strength: 10,
       dexterity: 10,
@@ -115,7 +117,7 @@ const Profile = () => {
   
     if (name in newCharacter.character_stats) {
       // Если поле числовое, преобразуем значение, иначе сохраняем как текст
-      const isNumericField = ["hp", "level", "intelligence", "strength", "dexterity", "constitution", "wisdom", "resistance", "stability", "charisma"].includes(name);
+      const isNumericField = ["hp", "level","mana", "intelligence", "strength", "dexterity", "constitution", "wisdom", "resistance", "stability", "charisma"].includes(name);
   
       setNewCharacter((prev) => ({
         ...prev,
@@ -214,6 +216,16 @@ const Profile = () => {
                   name="level"
                   placeholder="Введите уровень"
                   value={newCharacter.character_stats.level}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Мана:
+                <input
+                  type="number"
+                  name="mana"
+                  placeholder="Введите ману"
+                  value={newCharacter.character_stats.mana}
                   onChange={handleChange}
                 />
               </label>
