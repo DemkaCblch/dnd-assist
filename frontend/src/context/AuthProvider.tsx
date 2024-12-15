@@ -1,22 +1,22 @@
 import { createContext, useState, useEffect } from "react";
 
-// Определяем тип контекста
 type AuthContextType = {
   isAuthenticated: boolean;
   setAuth: (auth: boolean) => void;
-  logout: () => void; // Функция для выхода из системы
+  logout: () => void;
+  loading: boolean;
 };
 
-// Создаем контекст с начальными значениями по умолчанию
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   setAuth: () => {},
   logout: () => {},
+  loading: true
 });
 
-// Провайдер авторизации
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Восстанавливаем авторизацию из localStorage при загрузке
   useEffect(() => {
@@ -24,26 +24,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (token) {
       setIsAuthenticated(true);
     }
+    setLoading(false); // Когда проверка завершилась, меняем loading на false
   }, []);
 
-  // Функция для установки авторизации
   const setAuth = (auth: boolean) => {
     if (auth) {
-     // Замените на реальный токен
+      // Сохраняем токен, если есть необходимость, уже сделано где-то в логине
     } else {
       localStorage.removeItem("authToken");
     }
     setIsAuthenticated(auth);
   };
 
-  // Функция для выхода
   const logout = () => {
     localStorage.removeItem("authToken");
     setIsAuthenticated(false);
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setAuth, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, setAuth, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
