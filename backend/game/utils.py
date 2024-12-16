@@ -65,7 +65,7 @@ async def migrate_room_to_mongo(room_id):
             user_tokens=user_tokens,
             current_move="Master",
             player_figures=players_figures,
-            table=MGTable(height=5, length=5)
+            table=MGTable(height=10, length=20)
         )
         await sync_to_async(mongo_room.save)()
         mongo_room_id = mongo_room.id
@@ -77,7 +77,7 @@ async def migrate_room_to_mongo(room_id):
     return mongo_room_id
 
 
-def _fetch_room_data(room_id):
+def fetch_room_data(room_id):
     """Извлекает данные комнаты из MongoDB."""
     room = MGRoom.objects.get(id=room_id)
     room_dict = {
