@@ -100,9 +100,9 @@ async def add_entity_to_room(entity_id, mongo_room_id, posX, posY):
 
         mongo_entity_figure = MGEntityFigures(
             name=entity.name,
-            picture_url="placeholder_url",  # Здесь можно заменить на реальный URL
-            posX=posX,  # Начальные координаты, заменить на нужные значения
-            posY=posY,  # Начальные координаты, заменить на нужные значения
+            picture_url="placeholder_url",
+            posX=posX,
+            posY=posY,
             entity=mongo_entity
         )
 
