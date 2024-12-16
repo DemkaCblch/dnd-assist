@@ -52,8 +52,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 await _set_player_ws_channel(self.token_key, self.room_id, self.channel_name)
 
             room = await database_sync_to_async(Room.objects.get)(id=self.room_id)
-            if room.room_status != "Saved":
-                raise ValueError("Game cannot be resumed.")
             room.room_status = "Waiting"
             await database_sync_to_async(room.save)()
 
@@ -96,10 +94,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
                         await self.change_turn_send_info("Master")
                     else:
                         await self.send(text_data=json.dumps({"message": "Now not you turn!"}))
-            elif action == "change_stats":
+            elif action == "change_character_stats":
                 if self.is_master:
                     change_character_stats.delay(data)
                     await self.change_character_stats_send_info(data)
+                else:
+                    await self.send(text_data=json.dumps({"message": "You are not master!"}))
             else:
                 await self.send(text_data=json.dumps({"message": "Unknown action."}))
         except Exception as e:
@@ -160,7 +160,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     """ === Методы для работы с фигуркой === """
 
-    async def add_item_send_send_info(self, data, uuid_gen):
+    async def add_item_send_info(self, data, uuid_gen):
         figure_id = data["figure_id"]
         item_name = data["name"]
         item_description = data["description"]
@@ -186,21 +186,38 @@ class RoomConsumer(AsyncWebsocketConsumer):
                                             {"type": "handler_change_character_stats_send_info",
                                              "mongo_room_id": mongo_room_id,
                                              "figure_id": figure_id,
-                                             "stats": {
-                                                 "hp": data["hp"],
-                                                 "mana": data["mana"],
-                                                 "race": data["race"],
-                                                 "intelligence": data["intelligence"],
-                                                 "strength": data["strength"],
-                                                 "dexterity": data["dexterity"],
-                                                 "constitution": data["constitution"],
-                                                 "wisdom": data["wisdom"],
-                                                 "charisma": data["charisma"],
-                                                 "level": data["level"],
-                                                 "resistance": data["resistance"],
-                                                 "stability": data["stability"]
-                                             }
+                                             "hp": data["stats"]["hp"],
+                                             "mana": data["stats"]["mana"],
+                                             "race": data["stats"]["race"],
+                                             "intelligence": data["stats"]["intelligence"],
+                                             "strength": data["stats"]["strength"],
+                                             "dexterity": data["stats"]["dexterity"],
+                                             "constitution": data["stats"]["constitution"],
+                                             "wisdom": data["stats"]["wisdom"],
+                                             "charisma": data["stats"]["charisma"],
+                                             "level": data["stats"]["level"],
+                                             "resistance": data["stats"]["resistance"],
+                                             "stability": data["stats"]["stability"]
+
                                              })
+
+    async def change_entity_stats_send_info(self, data):
+        figure_id = data["figure_id"]
+        mongo_room_id = data["mongo_room_id"]
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "handler_change_entity_stats_send_info",
+                "mongo_room_id": mongo_room_id,
+                "figure_id": figure_id,
+                "stats": {
+                    "hp": data["hp"],
+                    "level": data["level"],
+                    "resistance": data["resistance"],
+                    "stability": data["stability"]
+                }
+            }
+        )
 
     """ === Обработчики === """
 
@@ -280,3 +297,20 @@ class RoomConsumer(AsyncWebsocketConsumer):
                  "resistance": data["resistance"],
                  "stability": data["stability"]
              }}))
+
+    async def handler_change_entity_stats_send_info(self, data):
+        figure_id = data["figure_id"]
+        mongo_room_id = data["mongo_room_id"]
+        await self.send(
+            text_data=json.dumps({
+                "type": "change_entity_stats",
+                "mongo_room_id": mongo_room_id,
+                "figure_id": figure_id,
+                "stats": {
+                    "hp": data["stats"]["hp"],
+                    "level": data["stats"]["level"],
+                    "resistance": data["stats"]["resistance"],
+                    "stability": data["stats"]["stability"]
+                }
+            })
+        )
