@@ -1,3 +1,4 @@
+import asyncio
 import json
 import uuid
 
@@ -8,11 +9,11 @@ from mongoengine import DoesNotExist
 from rest_framework.authtoken.models import Token
 
 from game.consumers_utils import _room_exists, _get_master_token, _can_join_room, _set_player_ws_channel, \
-    _get_character_name
-from game.tasks import add_item, delete_item, change_turn_master, change_turn_player
-
-from game.mongo_models import MGRoom, MGBackpack, MGItem
-from game.utils import migrate_room_to_mongo, _fetch_room_data
+    _get_character_name, get_websocket_channel_ids
+from game.tasks import add_item, delete_item, change_turn_master, change_turn_player, change_character_stats
+from game.consumers_utils import master_disconnect
+from game.mongo_models import MGRoom
+from game.utils import migrate_room_to_mongo, fetch_room_data
 from room.models import Room, PlayerInRoom
 
 
@@ -50,6 +51,11 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     return
                 await _set_player_ws_channel(self.token_key, self.room_id, self.channel_name)
 
+            if self.room.room_status != "Saved":
+                raise ValueError("Game cannot be resumed.")
+            self.room.room_status = "Waiting"
+            await database_sync_to_async(self.room.save)()
+
             # Подключаем клиента к WebSocket-группе
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
             await self.accept()
@@ -57,12 +63,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(f"Connection error: {e}")
             await self.close()
-
-    async def disconnect(self, close_code):
-        """Обработка отключения клиента."""
-        if self.is_master:
-            await self._handle_master_disconnect()
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
         """Обработка сообщений от клиента."""
@@ -72,44 +72,43 @@ class RoomConsumer(AsyncWebsocketConsumer):
         try:
             if action == "start_game":
                 await self.start_game()
-            elif action == "resume_game":
-                await self.resume_game()
             elif action == "add_item":
                 if self.is_master:
                     uuid_gen = str(uuid.uuid4())
-                    add_item(data, uuid_gen)
+                    add_item.delay(data, uuid_gen)
                     await self.add_item_send_info(data, uuid_gen)
                 else:
                     await self.send(text_data=json.dumps({"message": "You are not master!"}))
             elif action == "delete_item":
                 if self.is_master:
-                    delete_item(data)
+                    delete_item.delay(data)
                     await self.delete_item_send_info(data)
                 else:
                     await self.send(text_data=json.dumps({"message": "You are not master!"}))
             elif action == "change_turn":
                 if self.is_master:
-                    change_turn_master(data)
-
-                    character_name = await _get_character_name(mongo_room_id=data["mongo_room_id"],
-                                                               figure_id=data["figure_id"])
-                    await self.change_turn_send_info(character_name)
+                    change_turn_master.delay(data)
+                    await self.change_turn_send_info(data["figure_id"])
                 else:
                     if MGRoom.objects(id=data["mongo_room_id"]).first().current_move == data["figure_id"]:
-                        change_turn_player(data)
+                        change_turn_player.delay(data)
                         await self.change_turn_send_info("Master")
                     else:
                         await self.send(text_data=json.dumps({"message": "Now not you turn!"}))
-
+            elif action == "change_stats":
+                if self.is_master:
+                    change_character_stats.delay(data)
+                    await self.change_character_stats_send_info(data)
             else:
                 await self.send(text_data=json.dumps({"message": "Unknown action."}))
         except Exception as e:
             await self.send(text_data=json.dumps({"error": str(e)}))
 
-    # === Методы для работы с комнатой ===
+    """ === Методы для работы с комнатой === """
+
     async def start_game(self):
         room = await database_sync_to_async(Room.objects.get)(id=self.room_id)
-        if room.launches != -1:
+        if room.room_status != "In Progress":
             master_token = await _get_master_token(self.room_id)
             if self.scope.get("token") != master_token:
                 raise ValueError("You are not the master.")
@@ -125,32 +124,41 @@ class RoomConsumer(AsyncWebsocketConsumer):
             )
             self.mongo_room_id = await migrate_room_to_mongo(room_id=self.room_id)
             # Отослать всем игрокам информацию об игре
-            await self._send_room_data(self.mongo_room_id)
+            await self.handler_room_data_send_info(self.mongo_room_id)
         else:
             await self.channel_layer.group_send(self.room_group_name, {"type": "handler_game_event",
-                                                                       "message": "The game has already been "
-                                                                                  "initialized!"})
+                                                                       "message": "The game has already started!"})
 
-    # Переделать возможно
-    async def resume_game(self):
-        room = await database_sync_to_async(Room.objects.get)(id=self.room_id)
-        if room.room_status != "Saved":
-            raise ValueError("Game cannot be resumed.")
-        room.room_status = "Waiting"
-        await database_sync_to_async(room.save)()
-        await self.channel_layer.group_send(self.room_group_name,
-                                            {"type": "handler_game_event", "message": "Game resumed!"})
+    async def disconnect(self, close_code):
+        """Обработка отключения клиента."""
+        if self.is_master:
+            await master_disconnect(room_id=self.room_id)
+            channel_ids = await get_websocket_channel_ids(self.room_id)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "handler_master_disconnect"
+                }
+            )
+            await asyncio.sleep(1)
+            for channel_name in channel_ids:
+                await self.channel_layer.send(channel_name, {
+                    "type": "websocket.close",
+                    "code": 1000,
+                })
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
-    async def change_turn_send_info(self, character_name):
+    async def change_turn_send_info(self, figure_id):
         await self.channel_layer.group_send(self.room_group_name,
-                                            {"type": "handler_change_turn_send_info", "name": character_name})
+                                            {"type": "handler_change_turn_send_info", "figure_id": figure_id})
 
     async def room_data_send_info(self, mongo_room_id):
-        room_data = await database_sync_to_async(_fetch_room_data)(mongo_room_id)
+        room_data = await database_sync_to_async(fetch_room_data)(mongo_room_id)
         await self.channel_layer.group_send(self.room_group_name,
                                             {"type": "handler_room_data_send_info", "room_data": room_data})
 
-    # === Методы для работы с инвентарём ===
+    """ === Методы для работы с фигуркой === """
+
     async def add_item_send_info(self, data, uuid_gen):
         figure_id = data["figure_id"]
         item_name = data["name"]
@@ -170,13 +178,40 @@ class RoomConsumer(AsyncWebsocketConsumer):
                                              "id": id,
                                              "figure_id": figure_id})
 
-    """Handlers"""
+    async def change_character_stats_send_info(self, data):
+        figure_id = data["figure_id"]
+        item_name = data["name"]
+        item_description = data["description"]
+        await self.channel_layer.group_send(self.room_group_name,
+                                            {"type": "handler_change_character_stats_info",
+                                             "mongo_room_id": "room_id_value",
+                                             "figure_id": "figure_id_value",
+                                             "stats": {
+                                                 "hp": 100,
+                                                 "mana": 50,
+                                                 "race": "Elf",
+                                                 "intelligence": 15,
+                                                 "strength": 10,
+                                                 "dexterity": 12,
+                                                 "constitution": 14,
+                                                 "wisdom": 16,
+                                                 "charisma": 13,
+                                                 "level": 5,
+                                                 "resistance": 8,
+                                                 "stability": 7
+                                             }
+                                             })
 
-    async def handle_master_disconnect(self):
-        room = Room.objects.get(id=self.room_id)
-        room.room_status = "Saved"
-        room.save()
-        PlayerInRoom.objects.filter(room=room).delete()
+    """ === Обработчики === """
+
+    async def websocket_close(self, event):
+        """Обработчик закрытия WebSocket."""
+        code = event.get("code", 1000)
+        await self.close(code)
+
+    async def handler_master_disconnect(self, event):
+        await self.send(text_data=json.dumps(
+            {"type": "master_disconnect", "message": "The room is closing because the admin has left."}))
 
     async def handler_add_item_info(self, event):
         figure_id = event["figure_id"]
