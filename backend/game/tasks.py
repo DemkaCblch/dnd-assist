@@ -92,3 +92,29 @@ def change_character_stats(data):
         set__player_figures__S__character__stats__level=new_stats.get("level"),
         set__player_figures__S__character__stats__resistance=new_stats.get("resistance"),
         set__player_figures__S__character__stats__stability=new_stats.get("stability"))
+
+
+@shared_task
+def change_entity_stats(data):
+    mongo_room_id = data["mongo_room_id"]
+    figure_id = data["figure_id"]
+    new_stats = data["stats"]
+    MGRoom.objects(id=mongo_room_id, entity_figures__id=figure_id).update_one(
+        set__entity_figures__S__entity__stats__hp=new_stats.get("hp"),
+        set__entity_figures__S__entity__stats__level=new_stats.get("level"),
+        set__entity_figures__S__entity__stats__resistance=new_stats.get("resistance"),
+        set__entity_figures__S__entity__stats__stability=new_stats.get("stability"),
+    )
+
+
+@shared_task
+def change_entity_stats(data):
+    mongo_room_id = data["mongo_room_id"]
+    figure_id = data["figure_id"]
+    new_stats = data["stats"]
+    MGRoom.objects(id=mongo_room_id, entity_figures__id=figure_id).update_one(
+        set__entity_figures__S__entity__stats__hp=new_stats.get("hp"),
+        set__entity_figures__S__entity__stats__level=new_stats.get("level"),
+        set__entity_figures__S__entity__stats__resistance=new_stats.get("resistance"),
+        set__entity_figures__S__entity__stats__stability=new_stats.get("stability"),
+    )
