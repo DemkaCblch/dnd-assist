@@ -1,3 +1,4 @@
+import asyncio
 import json
 import uuid
 
@@ -8,7 +9,7 @@ from mongoengine import DoesNotExist
 from rest_framework.authtoken.models import Token
 
 from game.consumers_utils import _room_exists, _get_master_token, _can_join_room, _set_player_ws_channel, \
-    _get_character_name
+    _get_character_name, get_websocket_channel_ids
 from game.tasks import add_item, delete_item, change_turn_master, change_turn_player
 from game.consumers_utils import master_disconnect
 from game.mongo_models import MGRoom, MGBackpack, MGItem
@@ -57,13 +58,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print(f"Connection error: {e}")
             await self.close()
-
-    async def disconnect(self, close_code):
-        """Обработка отключения клиента."""
-        if self.is_master:
-            await master_disconnect(room_id=self.room_id)
-            await self.channel_layer.group_send(self.room_group_name, {"type": "handler_master_disconnect"})
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
         """Обработка сообщений от клиента."""
@@ -142,6 +136,25 @@ class RoomConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(self.room_group_name,
                                             {"type": "handler_game_event", "message": "Game resumed!"})
 
+    async def disconnect(self, close_code):
+        """Обработка отключения клиента."""
+        if self.is_master:
+            await master_disconnect(room_id=self.room_id)
+            channel_ids = await get_websocket_channel_ids(self.room_id)
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "handler_master_disconnect"
+                }
+            )
+            await asyncio.sleep(1)
+            for channel_name in channel_ids:
+                await self.channel_layer.send(channel_name, {
+                    "type": "websocket.close",
+                    "code": 1000,
+                })
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+
     async def change_turn_send_info(self, character_name):
         await self.channel_layer.group_send(self.room_group_name,
                                             {"type": "handler_change_turn_send_info", "name": character_name})
@@ -173,8 +186,14 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     """Handlers"""
 
+    async def websocket_close(self, event):
+        """Обработчик закрытия WebSocket."""
+        code = event.get("code", 1000)
+        await self.close(code)
+
     async def handler_master_disconnect(self, event):
-        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        await self.send(text_data=json.dumps(
+            {"type": "master_disconnect", "message": "The room is closing because the admin has left."}))
 
     async def handler_add_item_info(self, event):
         figure_id = event["figure_id"]
