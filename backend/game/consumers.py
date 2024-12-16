@@ -124,7 +124,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
             )
             self.mongo_room_id = await migrate_room_to_mongo(room_id=self.room_id)
             # Отослать всем игрокам информацию об игре
-            await self.handler_room_data_send_info(self.mongo_room_id)
+            await self.room_data_send_info(self.mongo_room_id)
         else:
             await self.channel_layer.group_send(self.room_group_name, {"type": "handler_game_event",
                                                                        "message": "The game has already started!"})
@@ -159,12 +159,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     """ === Методы для работы с фигуркой === """
 
-    async def add_item_send_info(self, data, uuid_gen):
+    async def add_item_send_send_info(self, data, uuid_gen):
         figure_id = data["figure_id"]
         item_name = data["name"]
         item_description = data["description"]
         await self.channel_layer.group_send(self.room_group_name,
-                                            {"type": "handler_add_item_info",
+                                            {"type": "handler_add_item_send_info",
                                              "id": uuid_gen,
                                              "figure_id": figure_id,
                                              "item_name": item_name,
@@ -174,31 +174,30 @@ class RoomConsumer(AsyncWebsocketConsumer):
         id = data["id"]
         figure_id = data["figure_id"]
         await self.channel_layer.group_send(self.room_group_name,
-                                            {"type": "handler_delete_item_info",
+                                            {"type": "handler_delete_item_send_info",
                                              "id": id,
                                              "figure_id": figure_id})
 
     async def change_character_stats_send_info(self, data):
         figure_id = data["figure_id"]
-        item_name = data["name"]
-        item_description = data["description"]
+        mongo_room_id = data["mongo_room_id"]
         await self.channel_layer.group_send(self.room_group_name,
-                                            {"type": "handler_change_character_stats_info",
-                                             "mongo_room_id": "room_id_value",
-                                             "figure_id": "figure_id_value",
+                                            {"type": "handler_change_character_stats_send_info",
+                                             "mongo_room_id": mongo_room_id,
+                                             "figure_id": figure_id,
                                              "stats": {
-                                                 "hp": 100,
-                                                 "mana": 50,
-                                                 "race": "Elf",
-                                                 "intelligence": 15,
-                                                 "strength": 10,
-                                                 "dexterity": 12,
-                                                 "constitution": 14,
-                                                 "wisdom": 16,
-                                                 "charisma": 13,
-                                                 "level": 5,
-                                                 "resistance": 8,
-                                                 "stability": 7
+                                                 "hp": data["hp"],
+                                                 "mana": data["mana"],
+                                                 "race": data["race"],
+                                                 "intelligence": data["intelligence"],
+                                                 "strength": data["strength"],
+                                                 "dexterity": data["dexterity"],
+                                                 "constitution": data["constitution"],
+                                                 "wisdom": data["wisdom"],
+                                                 "charisma": data["charisma"],
+                                                 "level": data["level"],
+                                                 "resistance": data["resistance"],
+                                                 "stability": data["stability"]
                                              }
                                              })
 
@@ -213,26 +212,26 @@ class RoomConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(
             {"type": "master_disconnect", "message": "The room is closing because the admin has left."}))
 
-    async def handler_add_item_info(self, event):
+    async def handler_add_item_send_info(self, event):
         figure_id = event["figure_id"]
         item_name = event["item_name"]
         item_description = event["item_description"]
         uuid_gen = event["id"]
 
         await self.send(text_data=json.dumps({
-            "type": "add_item_info",
+            "type": "add_item",
             "id": uuid_gen,
             "figure_id": figure_id,
             "item_name": item_name,
             "item_description": item_description,
         }))
 
-    async def handler_delete_item_info(self, event):
+    async def handler_delete_item_send_info(self, event):
         id = event["id"]
         figure_id = event["figure_id"]
 
         await self.send(text_data=json.dumps({
-            "type": "delete_item_info",
+            "type": "delete_item",
             "id": id,
             "figure_id": figure_id,
         }))
@@ -258,3 +257,25 @@ class RoomConsumer(AsyncWebsocketConsumer):
             "type": "change_turn",
             "name": character_name
         }))
+
+    async def handler_change_character_stats_send_info(self, data):
+        figure_id = data["figure_id"]
+        mongo_room_id = data["mongo_room_id"]
+        await self.send(text_data=json.dumps(
+            {"type": "change_character_stats",
+             "mongo_room_id": mongo_room_id,
+             "figure_id": figure_id,
+             "stats": {
+                 "hp": data["hp"],
+                 "mana": data["mana"],
+                 "race": data["race"],
+                 "intelligence": data["intelligence"],
+                 "strength": data["strength"],
+                 "dexterity": data["dexterity"],
+                 "constitution": data["constitution"],
+                 "wisdom": data["wisdom"],
+                 "charisma": data["charisma"],
+                 "level": data["level"],
+                 "resistance": data["resistance"],
+                 "stability": data["stability"]
+             }}))
