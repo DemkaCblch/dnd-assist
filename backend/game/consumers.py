@@ -51,10 +51,11 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     return
                 await _set_player_ws_channel(self.token_key, self.room_id, self.channel_name)
 
-            if self.room.room_status != "Saved":
+            room = await database_sync_to_async(Room.objects.get)(id=self.room_id)
+            if room.room_status != "Saved":
                 raise ValueError("Game cannot be resumed.")
-            self.room.room_status = "Waiting"
-            await database_sync_to_async(self.room.save)()
+            room.room_status = "Waiting"
+            await database_sync_to_async(room.save)()
 
             # Подключаем клиента к WebSocket-группе
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
