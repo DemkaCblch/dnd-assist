@@ -45,3 +45,10 @@ def _get_character_name(mongo_room_id, figure_id):
         if player_figure and player_figure.character:
             character_name = player_figure.character.name
     return character_name
+
+
+@database_sync_to_async
+def master_disconnect(room_id):
+    room = Room.objects.get(id=room_id)
+    room.room_status = "Saved"
+    room.save()

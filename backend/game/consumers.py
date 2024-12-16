@@ -10,7 +10,7 @@ from rest_framework.authtoken.models import Token
 from game.consumers_utils import _room_exists, _get_master_token, _can_join_room, _set_player_ws_channel, \
     _get_character_name
 from game.tasks import add_item, delete_item, change_turn_master, change_turn_player
-
+from game.consumers_utils import master_disconnect
 from game.mongo_models import MGRoom, MGBackpack, MGItem
 from game.utils import migrate_room_to_mongo, _fetch_room_data
 from room.models import Room, PlayerInRoom
@@ -61,7 +61,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         """Обработка отключения клиента."""
         if self.is_master:
-            await self._handle_master_disconnect()
+            await master_disconnect(room_id=self.room_id)
+            await self.channel_layer.group_send(self.room_group_name, {"type": "handler_master_disconnect"})
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def receive(self, text_data):
@@ -125,7 +126,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
             )
             self.mongo_room_id = await migrate_room_to_mongo(room_id=self.room_id)
             # Отослать всем игрокам информацию об игре
-            await self._send_room_data(self.mongo_room_id)
+            await self.handler_room_data_send_info(self.mongo_room_id)
         else:
             await self.channel_layer.group_send(self.room_group_name, {"type": "handler_game_event",
                                                                        "message": "The game has already been "
@@ -172,11 +173,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
 
     """Handlers"""
 
-    async def handle_master_disconnect(self):
-        room = Room.objects.get(id=self.room_id)
-        room.room_status = "Saved"
-        room.save()
-        PlayerInRoom.objects.filter(room=room).delete()
+    async def handler_master_disconnect(self, event):
+        await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
     async def handler_add_item_info(self, event):
         figure_id = event["figure_id"]
