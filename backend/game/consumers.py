@@ -9,8 +9,9 @@ from mongoengine import DoesNotExist
 from rest_framework.authtoken.models import Token
 
 from game.consumers_utils import _room_exists, _get_master_token, _can_join_room, _set_player_ws_channel, \
-    _get_character_name, get_websocket_channel_ids
-from game.tasks import add_item, delete_item, change_turn_master, change_turn_player, change_character_stats
+    _get_character_name, get_websocket_channel_ids, get_figure_id_by_user_token
+from game.tasks import add_item, delete_item, change_turn_master, change_turn_player, change_character_stats, \
+    change_figure_position
 from game.consumers_utils import master_disconnect
 from game.mongo_models import MGRoom
 from game.utils import migrate_room_to_mongo, fetch_room_data
@@ -89,7 +90,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     change_turn_master.delay(data)
                     await self.change_turn_send_info(data["figure_id"])
                 else:
-                    if MGRoom.objects(id=data["mongo_room_id"]).first().current_move == data["figure_id"]:
+                    if MGRoom.objects(id=data["mongo_room_id"]).first().current_move == get_figure_id_by_user_token(
+                            mongo_room_id=data["mongo_room_id"], user_token=self.token_key):
                         change_turn_player.delay(data)
                         await self.change_turn_send_info("Master")
                     else:
@@ -100,6 +102,20 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     await self.change_character_stats_send_info(data)
                 else:
                     await self.send(text_data=json.dumps({"message": "You are not master!"}))
+            elif action == "change_position_figure":
+                if self.is_master:
+                    change_figure_position.delay(data)
+                    await self.change_position_figure_send_info(data)
+                else:
+                    figure_id = get_figure_id_by_user_token(mongo_room_id=data["mongo_room_id"],
+                                                            user_token=self.token_key)
+                    if figure_id == data["figure_id"]:
+                        change_figure_position.delay(data)
+                        await self.change_position_figure_send_info(data)
+                    else:
+                        await self.send(text_data=json.dumps({"message": "That not you figure!"}))
+
+
             else:
                 await self.send(text_data=json.dumps({"message": "Unknown action."}))
         except Exception as e:
@@ -123,7 +139,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 self.room_group_name,
                 {"type": "handler_game_event", "message": "Game started!"}
             )
-            self.mongo_room_id = await migrate_room_to_mongo(room_id=self.room_id)
+            if room.launches == 0:
+                self.mongo_room_id = await migrate_room_to_mongo(room_id=self.room_id)
             # Отослать всем игрокам информацию об игре
             await self.room_data_send_info(self.mongo_room_id)
         else:
@@ -216,6 +233,20 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     "resistance": data["resistance"],
                     "stability": data["stability"]
                 }
+            }
+        )
+
+    async def change_position_figure_send_info(self, data):
+        figure_id = data["figure_id"]
+        mongo_room_id = data["mongo_room_id"]
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "handler_change_position_figure_send_info",
+                "mongo_room_id": mongo_room_id,
+                "figure_id": figure_id,
+                "posX": data["posX"],
+                "posY": data["posY"]
             }
         )
 
@@ -314,3 +345,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 }
             })
         )
+
+    async def handler_change_position_figure_send_info(self, data):
+        figure_id = data["figure_id"]
+        mongo_room_id = data["mongo_room_id"]
+        await self.send(text_data=json.dumps({"type": "change_position_figure",
+                                              "mongo_room_id": mongo_room_id,
+                                              "figure_id": figure_id,
+                                              "posX": data["posX"],
+                                              "posY": data["posY"]}))

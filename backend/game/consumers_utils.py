@@ -56,3 +56,10 @@ def master_disconnect(room_id):
     room = Room.objects.get(id=room_id)
     room.room_status = "Saved"
     room.save()
+
+
+def get_figure_id_by_user_token(mongo_room_id, user_token):
+    room = MGRoom.objects(id=mongo_room_id).only('player_figures').first()
+    for figure in room.player_figures:
+        if figure.character and figure.character.user_token == user_token:
+            return figure.id

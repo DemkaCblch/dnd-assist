@@ -118,3 +118,35 @@ def change_entity_stats(data):
         set__entity_figures__S__entity__stats__resistance=new_stats.get("resistance"),
         set__entity_figures__S__entity__stats__stability=new_stats.get("stability"),
     )
+
+
+@shared_task
+def change_figure_position(data):
+    mongo_room_id = data["mongo_room_id"]
+    figure_id = data["figure_id"]
+    new_pos_x = data["posX"]
+    new_pos_y = data["posY"]
+
+    MGRoom.objects(id=mongo_room_id, player_figures__id=figure_id).update_one(
+        set__player_figures__S__posX=new_pos_x,
+        set__player_figures__S__posY=new_pos_y
+    )
+    updated_player = MGRoom.objects(
+        id=mongo_room_id,
+        player_figures__id=figure_id
+    ).update_one(
+        set__player_figures__S__posX=new_pos_x,
+        set__player_figures__S__posY=new_pos_y
+    )
+    if updated_player:
+        return f"Player figure {figure_id} updated to position ({new_pos_x}, {new_pos_y})."
+
+    updated_entity = MGRoom.objects(
+        id=mongo_room_id,
+        entity_figures__id=figure_id
+    ).update_one(
+        set__entity_figures__S__posX=new_pos_x,
+        set__entity_figures__S__posY=new_pos_y
+    )
+    if updated_entity:
+        return f"Entity figure {figure_id} updated to position ({new_pos_x}, {new_pos_y})."

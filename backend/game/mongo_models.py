@@ -77,7 +77,6 @@ class MGPlayerFigures(EmbeddedDocument):
     picture_url = StringField(max_length=100, required=True)
     posX = IntField(required=True)
     posY = IntField(required=True)
-    user_token = StringField(max_length=100, required=True)
     character = EmbeddedDocumentField(MGCharacter, required=True)
 
 
