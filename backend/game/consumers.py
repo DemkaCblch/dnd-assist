@@ -14,7 +14,7 @@ from game.tasks import add_item, delete_item, change_turn_master, change_turn_pl
     change_figure_position
 from game.consumers_utils import master_disconnect
 from game.mongo_models import MGRoom
-from game.utils import migrate_room_to_mongo, fetch_room_data
+from game.utils import migrate_room_to_mongo, fetch_room_data, add_entity_to_room
 from room.models import Room, PlayerInRoom
 
 
@@ -114,9 +114,13 @@ class RoomConsumer(AsyncWebsocketConsumer):
                         await self.change_position_figure_send_info(data)
                     else:
                         await self.send(text_data=json.dumps({"message": "That not you figure!"}))
-            elif action == "add_enity":
-                a = 1
-
+            elif action == "add_entity":
+                if self.is_master:
+                    entity = await add_entity_to_room(entity_id=data["entity_id"], mongo_room_id=data["mongo_room_id"],
+                                                      posX=data["posX"], posY=data["posY"])
+                    await self.add_entity_send_info(entity)
+                else:
+                    await self.send(text_data=json.dumps({"message": "Now not you turn!"}))
             else:
                 await self.send(text_data=json.dumps({"message": "Unknown action."}))
         except Exception as e:
@@ -251,6 +255,25 @@ class RoomConsumer(AsyncWebsocketConsumer):
             }
         )
 
+    async def add_entity_send_info(self, entity_figure):
+        await self.channel_layer.group_send(self.room_group_name,
+                                            {"type": "handler_add_entity_send_info",
+                                             "entity_figure": {
+                                                 "id": entity_figure.id,
+                                                 "name": entity_figure.name,
+                                                 "picture_url": entity_figure.picture_url,
+                                                 "posX": entity_figure.posX,
+                                                 "posY": entity_figure.posY,
+                                                 "entity": {
+                                                     "name": entity_figure.entity.name,
+                                                     "status": entity_figure.entity.status,
+                                                     "user_token": entity_figure.entity.user_token,
+                                                     "stats": {
+                                                         "hp": entity_figure.entity.stats.hp,
+                                                         "level": entity_figure.entity.stats.level,
+                                                         "resistance": entity_figure.entity.stats.resistance,
+                                                         "stability": entity_figure.entity.stats.stability}}}})
+
     """ === Обработчики === """
 
     async def websocket_close(self, event):
@@ -308,7 +331,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
             "figure_id": figure_id
         }))
 
-
     async def handler_change_character_stats_send_info(self, data):
         figure_id = data["figure_id"]
         mongo_room_id = data["mongo_room_id"]
@@ -356,3 +378,26 @@ class RoomConsumer(AsyncWebsocketConsumer):
                                               "figure_id": figure_id,
                                               "posX": data["posX"],
                                               "posY": data["posY"]}))
+
+    async def handler_add_entity_send_info(self, data):
+        await self.send(text_data=json.dumps(
+            {"type": "add_entity",
+             "entity_figure": {
+                 "id": data["entity_figure"]["id"],
+                 "name": data["entity_figure"]["name"],
+                 "picture_url": data["entity_figure"]["picture_url"],
+                 "posX": data["entity_figure"]["posX"],
+                 "posY": data["entity_figure"]["posY"],
+                 "entity": {
+                     "name": data["entity_figure"]["entity"]["name"],
+                     "status": data["entity_figure"]["entity"]["status"],
+                     "user_token": data["entity_figure"]["entity"]["user_token"],
+                     "stats": {
+                         "hp": data["entity_figure"]["entity"]["stats"]["hp"],
+                         "level": data["entity_figure"]["entity"]["stats"]["level"],
+                         "resistance": data["entity_figure"]["entity"]["stats"]["resistance"],
+                         "stability": data["entity_figure"]["entity"]["stats"]["stability"]
+                     }
+                 }
+             }
+             }))

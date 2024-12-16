@@ -1,8 +1,9 @@
 from asgiref.sync import sync_to_async
 
-from game.mongo_models import MGRoom, MGCharacterStats, MGCharacter, MGPlayerFigures, MGBackpack, MGTable
+from game.mongo_models import MGRoom, MGCharacterStats, MGCharacter, MGPlayerFigures, MGBackpack, MGTable, MGEntity, \
+    MGEntityStats, MGEntityFigures
 from room.models import Room, PlayerInRoom
-from user_profile.models import Character
+from user_profile.models import Character, EntityStats, Entity
 
 
 async def migrate_room_to_mongo(room_id):
@@ -76,8 +77,50 @@ async def migrate_room_to_mongo(room_id):
     return mongo_room_id
 
 
+async def add_entity_to_room(entity_id, mongo_room_id, posX, posY):
+    try:
+        entity = await sync_to_async(Entity.objects.get)(id=entity_id)
+        entity_stats = await sync_to_async(EntityStats.objects.get)(entity=entity)
+
+        mongo_entity_stats = MGEntityStats(
+            hp=entity_stats.hp,
+            level=entity_stats.level,
+            resistance=entity_stats.resistance,
+            stability=entity_stats.stability
+        )
+
+        user_token_key = await sync_to_async(lambda: str(entity.user_token.key))()
+
+        mongo_entity = MGEntity(
+            name=entity.name,
+            status=entity.status,
+            user_token=user_token_key,
+            stats=mongo_entity_stats
+        )
+
+        mongo_entity_figure = MGEntityFigures(
+            name=entity.name,
+            picture_url="placeholder_url",  # Здесь можно заменить на реальный URL
+            posX=posX,  # Начальные координаты, заменить на нужные значения
+            posY=posY,  # Начальные координаты, заменить на нужные значения
+            entity=mongo_entity
+        )
+
+        mongo_room = MGRoom.objects.get(id=mongo_room_id)
+
+        mongo_room.update(
+            push__entity_figures=mongo_entity_figure
+        )
+
+        print(f"Entity '{entity.name}' with stats added to MongoDB room '{mongo_room_id}'.")
+
+        return mongo_entity_figure
+
+    except Exception as e:
+        print(f"Error adding entity '{entity_id}' to room '{mongo_room_id}': {e}")
+
+
 def fetch_room_data(room_id):
-    """Извлекает данные комнаты из MongoDB."""
     room = MGRoom.objects.get(id=room_id)
     room_dict = {
         "id": str(room.id),
