@@ -53,9 +53,7 @@ class GetEntityAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         user_token = request.auth
-
         try:
-            # Находим сущность пользователя по токену
             entity = Entity.objects.get(user_token=user_token)
             return Response(EntitySerializer(entity).data, status=status.HTTP_200_OK)
         except Entity.DoesNotExist:

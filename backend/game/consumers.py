@@ -114,7 +114,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
                         await self.change_position_figure_send_info(data)
                     else:
                         await self.send(text_data=json.dumps({"message": "That not you figure!"}))
-
+            elif action == "add_enity":
+                a = 1
 
             else:
                 await self.send(text_data=json.dumps({"message": "Unknown action."}))
@@ -301,11 +302,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
         }))
 
     async def handler_change_turn_send_info(self, event):
-        character_name = event["name"]
+        figure_id = event["figure_id"]
         await self.send(text_data=json.dumps({
             "type": "change_turn",
-            "name": character_name
+            "figure_id": figure_id
         }))
+
 
     async def handler_change_character_stats_send_info(self, data):
         figure_id = data["figure_id"]
