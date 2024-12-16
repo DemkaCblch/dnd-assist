@@ -44,7 +44,7 @@ class MGCharacterStats(EmbeddedDocument):
 
 class MGItem(EmbeddedDocument):
     id = StringField(primary_key=True, default=lambda: str(uuid.uuid4()))
-    name = StringField(max_length=100, required=True)
+    name = StringField(max_length=100)
     description = StringField(max_length=500)
 
 
@@ -55,6 +55,7 @@ class MGBackpack(EmbeddedDocument):
 class MGCharacter(EmbeddedDocument):
     id = StringField(primary_key=True, default=lambda: str(uuid.uuid4()))
     name = StringField(max_length=100, required=True)
+    websocket_channel_id = StringField(required=True)
     status = StringField(max_length=50, required=True)
     user_token = StringField(max_length=100, required=True)
     stats = EmbeddedDocumentField(MGCharacterStats, required=True)
@@ -87,6 +88,7 @@ class MGTable(EmbeddedDocument):
 
 class MGRoom(Document):
     name = StringField(max_length=50, required=True)
+    room_id = IntField(required=True)
     room_status = StringField(default="Waiting", max_length=50, required=True)
     master_token = StringField(required=True)
     user_tokens = ListField(StringField(), default=[])
