@@ -1,5 +1,31 @@
+.controls{
+  display: flex;
+  flex-direction: column;
+}
 
-  
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+  height:calc(100vh - 60px);
+}
+
+/* Верхняя панель с персонажами */
+.player-panel {
+  background-color: #eee;
+  padding: 10px;
+  text-align: center;
+}
+
+.chat-panel {
+  background-color: #ddd;
+  padding: 10px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  margin-left: auto;
+  overflow-y: auto; /* Скролл, если контента будет много */
+}
   
   .token:active {
     cursor: grabbing;
@@ -91,7 +117,10 @@
   .token:hover {
     background-color: #0056b3;
   }
-
+  .game-area {
+    display: flex;
+    position: relative; /* Растягиваем элементы по высоте */
+  }
   
   .game-field {
     display: grid;
