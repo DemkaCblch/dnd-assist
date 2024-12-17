@@ -56,12 +56,19 @@ const Lobby: React.FC = () => {
 
     websocket.getSocket()?.addEventListener("message", (event) => {
       const message = JSON.parse(event.data);
-
+    
       if (message.type === "game_event") {
         console.log("Получено событие игры:", message.message);
         if (message.message === "Game started!") {
-          navigate(`/game/${id}`);
+          console.log("Ожидаем данные о поле (room_data)...");
         }
+      } else if (message.type === "room_data") {
+        console.log("Получен room_data:", message.data);
+        sessionStorage.setItem("gameData", JSON.stringify(message.data));
+    
+        navigate(`/field/${id}`);
+      } else {
+        console.log("Получено сообщение от WebSocket:", message);
       }
     });
 

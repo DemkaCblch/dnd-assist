@@ -1,165 +1,246 @@
-.controls{
+.controls {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  gap: 10px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 8px;
 }
-
 
 .game-container {
   display: flex;
   flex-direction: column;
-  height:calc(100vh - 60px);
+  height: calc(100vh - 60px);
+  background-color: #2c2c2c; /* Фон всего контейнера более нейтральный */
+  overflow-y: scroll;
 }
 
 /* Верхняя панель с персонажами */
 .player-panel {
-  background-color: #eee;
+  background-color:rgba(255, 255, 255, 0.3);
   padding: 10px;
+  text-align: center;
+  border-bottom: 2px solid #ccc;
+  max-height: 12%;  
+}
+
+.player-panel h3{
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.players-list {
+  display: flex;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.player-item {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: flex;
+  padding: 10px;
+  width: 300px;
+  gap: 5px;
   text-align: center;
 }
 
-.chat-panel {
+.player-item p {
+  margin: 5px 0;
+}
+
+/* Стат-бары для HP и маны */
+.stat-bar {
+  position: relative;
+  height: 20px;
+  border-radius: 5px;
+  overflow: hidden;
   background-color: #ddd;
+  margin: 5px 0;
+  font-size: 12px;
+  color: #fff;
+  line-height: 20px;
+}
+
+.stat-bar div {
+  height: 100%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Чат-панель */
+.chat-panel {
+  background-color: #eee;
   padding: 10px;
   width: 300px;
   display: flex;
   flex-direction: column;
   margin-left: auto;
-  overflow-y: auto; /* Скролл, если контента будет много */
+  overflow-y: auto;
+  border-left: 1px solid #aaa;
 }
-  
-  .token:active {
-    cursor: grabbing;
-  }
-  
 
-  .add-token-btn {
-    margin: 20px 0;
-    padding: 10px 15px;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    border-radius: 5px;
-  }
-  
-  .add-token-btn:hover {
-    background-color: #45a049;
-  }
-  
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 300px;
-    text-align: center;
-  }
-  
-  .modal-content h3 {
-    margin-bottom: 15px;
-  }
-  
-  .modal-content label {
-    display: block;
-    margin-bottom: 10px;
-  }
-  
-  .modal-content input {
-    margin-left: 10px;
-    width: 50px;
-  }
-  
-  .modal-content .close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 20px;
-    cursor: pointer;
-  }
-
-  .token {
-    position: absolute;
-    background-color: rgba(0, 128, 255, 0.7);
-    border: 2px solid #005f99;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    user-select: none;
-    transition: transform 0.3s ease-in-out; /* Для анимации перемещения */
-    z-index: 1;
-  }
-  
-  .token-content {
-    text-align: center;
-    color: white;
-      z-index: 1; /* Убедитесь, что текст остаётся поверх контекстного меню */
-      white-space: nowrap; /* Предотвращает перенос текста */
-      text-overflow: ellipsis; /* Показывает "..." если текст не помещается */
-      overflow: hidden; /* Скрывает лишний текст */
-  }
-  
-  
-  
-  
-  .token:hover {
-    background-color: #0056b3;
-  }
-  .game-area {
-    display: flex;
-    position: relative; /* Растягиваем элементы по высоте */
-  }
-  
-  .game-field {
-    display: grid;
-    border: 1px solid black;
-    margin: 20px auto;
-    position: relative;
-    background-image: url('C:\Users\bobra\Desktop\Ucheba\git\dnd-assist\frontend\public\one-piece-sanji.gif');
+/* Область с полем и чатом */
+.game-area {
+  display: flex;
+  position: relative;
+  flex: 1;
+  background: #3e1f1f; /* Темно-коричневый для контраста */
+  padding: 20px;
+  box-sizing: border-box;
+  background-image: url(../../public/table.webp);
+  background-size: cover; /* Изображение будет покрывать весь фон */
+    background-position: center; /* Центрируем изображение */
     background-repeat: no-repeat;
-    background-size: contain;
-  }
-  
-  .grid-cell {
-    border: 1px solid #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+}
 
-  .context-menu {
-    position: absolute;
-    background-color: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 5px;
-    z-index: 100;
-  }
-  
-  .context-menu button {
-    display: block;
-    width: 100%;
-    border: none;
-    background: none;
-    padding: 5px 10px;
-    text-align: left;
-    z-index: 100;
-    cursor: pointer;
-  }
-  
-  .context-menu button:hover {
-    background-color: #f0f0f0;
-  }
-  
+.game-field-container {
+  position: relative;
+  margin-right: 20px;
+  margin-bottom: 30px;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+/* Игровое поле */
+.game-field {
+  display: grid;
+  border: 1px solid black;
+  position: relative;
+  background-image: url('C:\\Users\\bobra\\Desktop\\Ucheba\\git\\dnd-assist\\frontend\\public\\one-piece-sanji.gif');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+/* Клетки поля */
+.grid-cell {
+  border: 1px solid #ddd;
+  display: block;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Токен */
+.token:active {
+  cursor: grabbing;
+}
+
+.token {
+  position: absolute;
+  background-color: rgba(0, 128, 255, 0.7);
+  display: flex;
+  width: 37.2px;
+  height: 40px;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  transition: transform 0.3s ease-in-out;
+  z-index: 1;
+}
+
+.token-content {
+  text-align: center;
+  color: white;
+  z-index: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.token:hover {
+  background-color: #0056b3;
+}
+
+/* Кнопка добавления фигурки */
+.add-token-btn {
+  margin: 20px 0;
+  padding: 10px 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 5px;
+}
+
+.add-token-btn:hover {
+  background-color: #45a049;
+}
+
+/* Модальное окно */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  position: relative;
+}
+
+.modal-content h3 {
+  margin-bottom: 15px;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.modal-content input {
+  margin-left: 10px;
+  width: 50px;
+}
+
+.modal-content .close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Контекстное меню */
+.context-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 5px;
+  z-index: 100;
+}
+
+.context-menu button {
+  display: block;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 5px 10px;
+  text-align: left;
+  z-index: 100;
+  cursor: pointer;
+}
+
+.context-menu button:hover {
+  background-color: #f0f0f0;
+}
