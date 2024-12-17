@@ -118,13 +118,13 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 if self.is_master:
                     entity = await add_entity_to_room(entity_id=data["entity_id"], mongo_room_id=data["mongo_room_id"],
                                                       posX=data["posX"], posY=data["posY"])
-                    await self.delete_entity_send_info(entity)
+                    await self.add_entity_send_info(entity)
                 else:
                     await self.send(text_data=json.dumps({"message": "You are not master!"}))
             elif action == "delete_entity":
                 if self.is_master:
                     delete_entity_from_room(entity_id=data["figure_id"], mongo_room_id=data["mongo_room_id"])
-                    await self.add_entity_send_info(data)
+                    await self.delete_entity_send_info(data)
                 else:
                     await self.send(text_data=json.dumps({"message": "You are not master!"}))
             elif action == "chat_message":
