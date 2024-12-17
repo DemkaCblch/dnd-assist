@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Main.css';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
-import Lobby from './Lobby';
+// import Lobby from './Lobby';
 import apiClient from '../apiClient';
 
 interface Room {
@@ -19,9 +19,9 @@ const Main = () => {
   const [error, setError] = useState<string | null>(null); //
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [roomName, setRoomName] = useState<string>(''); //
-  const [joinRoomName, setJoinRoomName] = useState<string>(''); // 
-  const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false); //  
-  const [hoveredRoomId, setHoveredRoomId] = useState<BigInteger | null>(null);
+  // const [joinRoomName, setJoinRoomName] = useState<string>(''); // 
+  // const [isJoinModalOpen, setIsJoinModalOpen] = useState<boolean>(false); //  
+  // const [hoveredRoomId, setHoveredRoomId] = useState<BigInteger | null>(null);
   const [selectedRoomId, setSelectedRoomId] = useState<BigInteger | null>(null);
   const [characters, setCharacters] = useState<any[]>([]); // Список персонажей пользователя
   const [isCharacterModalOpen, setIsCharacterModalOpen] = useState<boolean>(false); // Статус окна выбора персонажей
@@ -30,18 +30,18 @@ const Main = () => {
 
 
 
-  const handleOpenJoinModal = () => {
-    setIsJoinModalOpen(true); //
-  };
+  // const handleOpenJoinModal = () => {
+  //   setIsJoinModalOpen(true); //
+  // };
 
-  const handleCloseJoinModal = () => {
-    setIsJoinModalOpen(false); //   
-    setJoinRoomName(''); // 
-  };
+  // const handleCloseJoinModal = () => {
+  //   setIsJoinModalOpen(false); //   
+  //   setJoinRoomName(''); // 
+  // };
 
-  const handleJoinRoomNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setJoinRoomName(e.target.value); 
-  };
+  // const handleJoinRoomNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setJoinRoomName(e.target.value); 
+  // };
 
  /* const handleJoinRoomSubmit = async () => {
     if (!joinRoomName) {
@@ -91,15 +91,6 @@ const Main = () => {
       setIsModalOpen(false);
       const selectedRoomID = response.data.id;
       console.log('ID созданной комнаты:', selectedRoomID);
-  
-      // Подключение к WebSocket после создания комнаты
-     /* const token = localStorage.getItem('authToken');
-      if (token) {
-        const ws = new WebSocket(`ws://localhost:8000/ws/room/${selectedRoomID}/?token=${token}`);
-        ws.onopen = () => console.log('WebSocket соединение установлено для комнаты:', selectedRoomID);
-        ws.onerror = (error) => console.error('Ошибка WebSocket:', error);
-        ws.onclose = () => console.log('WebSocket соединение закрыто');
-      }*/
       apiClient.post(`connect-room/${selectedRoomID}/`)
       navigate(`lobby/${selectedRoomID}`);
     } catch (err) {

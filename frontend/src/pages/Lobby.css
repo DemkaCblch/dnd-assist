@@ -1,10 +1,17 @@
-.Lobby {
-    padding: 20px;
+  .Lobby {
+    height: calc(100vh - 60px);
+    background-image: url('../../public/Lobby.webp'); 
+    background-size: cover;
+    background-position: center; 
+    background-repeat: no-repeat;
+    
   }
   
   .lobby-header {
     text-align: center;
     margin-bottom: 20px;
+    border-radius: 2px;
+    background-color: rgba(148, 118, 118, 0.464);
   }
   
   .players-list {
