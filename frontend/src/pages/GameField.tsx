@@ -47,7 +47,6 @@ const GameField: React.FC = () => {
   const [editingToken, setEditingToken] = useState<Token | null>(null);
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; x: number; y: number; tokenId: string | null }>({ visible: false, x: 0, y: 0, tokenId: null });
 
-
   const [backpackModalVisible, setBackpackModalVisible] = useState(false);
   const [currentBackpackItems, setCurrentBackpackItems] = useState<{ id: string; name: string; description: string }[]>([]);
   const [currentFigureId, setCurrentFigureId] = useState<string | null>(null);
@@ -151,7 +150,6 @@ const GameField: React.FC = () => {
     const onMessage = (event: MessageEvent) => {
       const message = JSON.parse(event.data);
       if (message.type === 'add_item') {
-
         const { figure_id, item_name, item_description, id } = message;
         setPlayers((prev) =>
           prev.map((p) => {
@@ -201,7 +199,6 @@ const GameField: React.FC = () => {
             if (p.id === figure_id) {
               return {
                 ...p,
-
                 hp: stats.hp,
                // maxHp: stats.hp, // если нужно
                 mana: stats.mana,
@@ -268,7 +265,6 @@ const GameField: React.FC = () => {
       } else if (action === 'edit' && token) {
         setEditingToken(token);
       } else if (action === 'backpack') {
-
         const player = players.find(p => p.id === contextMenu.tokenId);
         if (player) {
           setCurrentFigureId(player.id);
