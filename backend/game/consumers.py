@@ -9,10 +9,10 @@ from mongoengine import DoesNotExist
 from rest_framework.authtoken.models import Token
 
 from game.consumers_utils import _room_exists, _get_master_token, _can_join_room, _set_player_ws_channel, \
-    _get_character_name, get_websocket_channel_ids, get_figure_id_by_user_token
+    _get_character_name, _get_websocket_channel_ids, _get_figure_id_by_user_token
 from game.tasks import add_item, delete_item, change_turn_master, change_turn_player, change_character_stats, \
     change_figure_position
-from game.consumers_utils import master_disconnect
+from game.consumers_utils import _master_disconnect
 from game.mongo_models import MGRoom
 from game.utils import migrate_room_to_mongo, fetch_room_data, add_entity_to_room
 from room.models import Room, PlayerInRoom
@@ -90,7 +90,7 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     change_turn_master.delay(data)
                     await self.change_turn_send_info(data["figure_id"])
                 else:
-                    if MGRoom.objects(id=data["mongo_room_id"]).first().current_move == get_figure_id_by_user_token(
+                    if MGRoom.objects(id=data["mongo_room_id"]).first().current_move == _get_figure_id_by_user_token(
                             mongo_room_id=data["mongo_room_id"], user_token=self.token_key):
                         change_turn_player.delay(data)
                         await self.change_turn_send_info("Master")
@@ -107,8 +107,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     change_figure_position.delay(data)
                     await self.change_position_figure_send_info(data)
                 else:
-                    figure_id = get_figure_id_by_user_token(mongo_room_id=data["mongo_room_id"],
-                                                            user_token=self.token_key)
+                    figure_id = _get_figure_id_by_user_token(mongo_room_id=data["mongo_room_id"],
+                                                             user_token=self.token_key)
                     if figure_id == data["figure_id"]:
                         change_figure_position.delay(data)
                         await self.change_position_figure_send_info(data)
@@ -121,6 +121,14 @@ class RoomConsumer(AsyncWebsocketConsumer):
                     await self.add_entity_send_info(entity)
                 else:
                     await self.send(text_data=json.dumps({"message": "Now not you turn!"}))
+            elif action == "chat_message":
+                if self.is_master:
+                    await self.send_message_send_info(name="Master", message=data["message"])
+                else:
+                    character_name = _get_character_name(mongo_room_id=data["mongo_room_id"], user_token=self.token_key)
+                    await self.send_message_send_info(name=character_name, message=data["message"])
+
+
             else:
                 await self.send(text_data=json.dumps({"message": "Unknown action."}))
         except Exception as e:
@@ -155,8 +163,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         """Обработка отключения клиента."""
         if self.is_master:
-            await master_disconnect(room_id=self.room_id)
-            channel_ids = await get_websocket_channel_ids(self.room_id)
+            await _master_disconnect(room_id=self.room_id)
+            channel_ids = await _get_websocket_channel_ids(self.room_id)
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -179,6 +187,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
         room_data = await database_sync_to_async(fetch_room_data)(mongo_room_id)
         await self.channel_layer.group_send(self.room_group_name,
                                             {"type": "handler_room_data_send_info", "room_data": room_data})
+
+    async def send_message_send_info(self, name, message):
+        await self.channel_layer.group_send(self.room_group_name,
+                                            {"type": "handler_send_message_send_info",
+                                             "name": name,
+                                             "message": message})
 
     """ === Методы для работы с фигуркой === """
 
@@ -401,3 +415,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
                  }
              }
              }))
+
+    async def handler_send_message_send_info(self, data):
+        await self.send(text_data=json.dumps({"type": "send_message",
+                                              "name": data["name"],
+                                              "message": data["message"]}))
