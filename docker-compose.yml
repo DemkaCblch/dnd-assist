@@ -9,6 +9,10 @@ services:
     ports:
       - '80:80'
     restart: always
+    depends_on:
+      - frontend
+      - django
+      - rabbitmq
     healthcheck:
       test: ['CMD', 'service', 'nginx', 'status']
       interval: 1m30s
@@ -128,9 +132,15 @@ services:
   django:
     build: ./backend
     container_name: django
+    command: |
+      bash -c "
+        python backend/manage.py makemigrations room &&
+        python backend/manage.py makemigrations user_profile &&
+        python backend/manage.py migrate &&
+        python backend/manage.py runserver 0.0.0.0:8000
+      "
     ports:
       - '8000:8000'
-    command: python backend/manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/usr/src/app
     networks:
@@ -154,11 +164,12 @@ services:
     networks:
       - gateway
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "admin", "ping" ]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
+    command: [ "redis-server", "--requirepass", "admin" ]
 
 volumes:
   db-data:
