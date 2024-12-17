@@ -11,7 +11,7 @@ from rest_framework.authtoken.models import Token
 from game.consumers_utils import _room_exists, _get_master_token, _can_join_room, _set_player_ws_channel, \
     _get_character_name, _get_websocket_channel_ids, _get_figure_id_by_user_token
 from game.tasks import add_item, delete_item, change_turn_master, change_turn_player, change_character_stats, \
-    change_figure_position
+    change_figure_position, delete_entity_from_room
 from game.consumers_utils import _master_disconnect
 from game.mongo_models import MGRoom
 from game.utils import migrate_room_to_mongo, fetch_room_data, add_entity_to_room
@@ -118,9 +118,15 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 if self.is_master:
                     entity = await add_entity_to_room(entity_id=data["entity_id"], mongo_room_id=data["mongo_room_id"],
                                                       posX=data["posX"], posY=data["posY"])
-                    await self.add_entity_send_info(entity)
+                    await self.delete_entity_send_info(entity)
                 else:
-                    await self.send(text_data=json.dumps({"message": "Now not you turn!"}))
+                    await self.send(text_data=json.dumps({"message": "You are not master!"}))
+            elif action == "delete_entity":
+                if self.is_master:
+                    delete_entity_from_room(entity_id=data["figure_id"], mongo_room_id=data["mongo_room_id"])
+                    await self.add_entity_send_info(data)
+                else:
+                    await self.send(text_data=json.dumps({"message": "You are not master!"}))
             elif action == "chat_message":
                 if self.is_master:
                     await self.send_message_send_info(name="Master", message=data["message"])
@@ -288,6 +294,15 @@ class RoomConsumer(AsyncWebsocketConsumer):
                                                          "resistance": entity_figure.entity.stats.resistance,
                                                          "stability": entity_figure.entity.stats.stability}}}})
 
+    async def delete_entity_send_info(self, figure_id):
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "handler_delete_entity_send_info",
+                "figure_id": figure_id
+            }
+        )
+
     """ === Обработчики === """
 
     async def websocket_close(self, event):
@@ -415,6 +430,14 @@ class RoomConsumer(AsyncWebsocketConsumer):
                  }
              }
              }))
+
+    async def handler_delete_entity_send_info(self, data):
+        await self.send(
+            text_data=json.dumps({
+                "type": "delete_entity",
+                "figure_id": data["figure_id"]
+            })
+        )
 
     async def handler_send_message_send_info(self, data):
         await self.send(text_data=json.dumps({"type": "send_message",

@@ -150,3 +150,20 @@ def change_figure_position(data):
     )
     if updated_entity:
         return f"Entity figure {figure_id} updated to position ({new_pos_x}, {new_pos_y})."
+
+
+@shared_task
+def delete_entity_from_room(data):
+    figure_id = data["figure_id"]
+    mongo_room_id = data["mongo_room_id"]
+
+    try:
+        mongo_room = MGRoom.objects.get(id=mongo_room_id)
+        mongo_room.update(
+            pull__entity_figures={"id": figure_id}
+        )
+        print(f"Entity with figure_id '{figure_id}' successfully removed from room '{mongo_room_id}'.")
+    except MGRoom.DoesNotExist:
+        print(f"Room with ID '{mongo_room_id}' not found.")
+    except Exception as e:
+        print(f"Error deleting entity with figure_id '{figure_id}': {e}")
