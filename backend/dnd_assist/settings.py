@@ -80,7 +80,7 @@ DATABASES = {
         'NAME': 'dnd-assist',
         'USER': 'admin',
         'PASSWORD': 'admin',
-        'HOST': '127.0.0.1',
+        'HOST': 'psql',
         'PORT': '5432',
     }
 }
@@ -123,7 +123,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Настройка Celery для работы с RabbitMQ
-CELERY_BROKER_URL = 'amqp://admin:admin@localhost:5672//'
+CELERY_BROKER_URL = 'amqp://admin:admin@rabbitmq:5672//'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
