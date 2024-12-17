@@ -26,16 +26,15 @@ function Navbar() {
       </div>
       <div className="nav-right">
         <Link to="/profile">
-          <img src="/assets/icons/admin-icon.png" className="icon" /> Admin
+          <img  className="icon" /> Профиль
         </Link>
-        <Link to="/characters"> Characters</Link>
         {isAuthenticated ? (
           <Link to="/logout">
-            <img src="/assets/icons/logout-icon.png" className="icon" /> Выйти
+            <img className="icon" /> Выйти
           </Link>
         ) : (
           <Link to="/login">
-            <img src="/assets/icons/login-icon.png" className="icon" /> Войти
+            <img className="icon" /> Войти
           </Link>
         )}
         </div>

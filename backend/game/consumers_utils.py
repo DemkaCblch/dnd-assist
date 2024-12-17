@@ -36,7 +36,6 @@ def _set_player_ws_channel(token_key, room_id, channel_name):
     player.save()
 
 
-@database_sync_to_async
 def _get_character_name(mongo_room_id, user_token):
     room = MGRoom.objects(id=mongo_room_id).only('player_figures').first()
     if room and room.player_figures:

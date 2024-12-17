@@ -82,19 +82,35 @@
   margin-left: auto;
   overflow-y: auto;
   border-left: 1px solid #aaa;
+  background-image: url(../../public/chat.webp);
+  background-size: cover; 
+  background-position: center; 
+  background-repeat: no-repeat;
 }
 
+.chat-input{
+  margin-bottom: 10px;
+  background-color: rgba(0, 0, 0, 0.5)
+}
+
+.chat-input input{
+  background-color: rgba(255, 255, 255, 0.5)
+}
+
+.chat-input button{
+  background-color: rgba(255, 255, 255, 0.447)
+}
 /* Область с полем и чатом */
 .game-area {
   display: flex;
   position: relative;
   flex: 1;
-  background: #3e1f1f; /* Темно-коричневый для контраста */
+  background: #3e1f1f;
   padding: 20px;
   box-sizing: border-box;
   background-image: url(../../public/table.webp);
-  background-size: cover; /* Изображение будет покрывать весь фон */
-    background-position: center; /* Центрируем изображение */
+  background-size: cover; 
+    background-position: center; 
     background-repeat: no-repeat;
 }
 

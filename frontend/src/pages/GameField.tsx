@@ -62,6 +62,9 @@ const GameField: React.FC = () => {
 
   const [enemyId, setEnemyId] = useState(''); 
 
+  const [chatMessages, setChatMessages] = useState<{ name: string; message: string }[]>([]);
+  const [chatInput, setChatInput] = useState('');
+
 
 
 
@@ -222,6 +225,9 @@ const GameField: React.FC = () => {
             name: entity_figure.name,
           },
         ]);
+      } else if (message.type === 'send_message') {
+        const { name, message: msg } = message;
+        setChatMessages((prev) => [...prev, { name, message: msg }]);
       }
       
     };
@@ -425,7 +431,7 @@ const GameField: React.FC = () => {
     if (!figureId || !mongoRoomId) return false;
   
 
-    if (currentMove === "Master" && figureId === "Master") {
+    if (currentMove === "Master") {
 
       return true;
     }
@@ -462,6 +468,16 @@ const GameField: React.FC = () => {
     setNewTokenX(0);
     setNewTokenY(0);
     setIsModalOpen(false);
+  };
+
+  const handleSendChatMessage = () => {
+    if (!mongoRoomId || !chatInput.trim()) return;
+    WebSocketService.send({
+      action: "chat_message",
+      mongo_room_id: mongoRoomId,
+      message: chatInput.trim()
+    });
+    setChatInput('');
   };
   
 
@@ -653,7 +669,24 @@ const GameField: React.FC = () => {
           </div>
         )}
         <div className="chat-panel">
-          <h3>Чат (плейсхолдер)</h3>
+          <h3>Чат</h3>
+          <div className="chat-messages" style={{flex: '1', overflowY: 'auto', marginBottom: '10px'}}>
+            {chatMessages.map((msg, index) => (
+              <div key={index} style={{marginBottom: '5px'}}>
+                <strong>{msg.name}:</strong> {msg.message}
+              </div>
+            ))}
+          </div>
+          <div className="chat-input" style={{display: 'flex', gap: '5px'}}>
+            <input 
+              type="text" 
+              value={chatInput} 
+              onChange={(e) => setChatInput(e.target.value)} 
+              placeholder="Введите сообщение..." 
+              style={{flex: '1', padding: '5px'}}
+            />
+            <button onClick={handleSendChatMessage}>Отправить</button>
+          </div>
         </div>
       </div>
 
