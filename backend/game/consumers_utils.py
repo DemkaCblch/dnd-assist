@@ -43,7 +43,7 @@ def _get_character_name(mongo_room_id, user_token):
         player_figure = next((pf for pf in room.player_figures.character.user_token if pf.id == user_token), None)
         if player_figure and player_figure.character:
             character_name = player_figure.character.name
-    return character_name
+            return character_name
 
 
 @database_sync_to_async
