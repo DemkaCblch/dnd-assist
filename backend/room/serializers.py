@@ -19,7 +19,7 @@ class CreateRoomSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        token = Token.objects.get_or_create(user=user)[0]  # Получаем токен пользователя
+        token = Token.objects.get_or_create(user=user)[0]
 
         validated_data['master_token'] = token
         validated_data['room_status'] = 'Waiting'

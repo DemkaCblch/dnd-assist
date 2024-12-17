@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'game',
     'room',
     'user_profile',
-    'corsheaders'
+    'corsheaders',
+    'drf_yasg',
 ]
 
 WSGI_APPLICATION = 'dnd_assist.wsgi.application'
@@ -80,7 +81,7 @@ DATABASES = {
         'NAME': 'dnd-assist',
         'USER': 'admin',
         'PASSWORD': 'admin',
-        'HOST': 'psql',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }

@@ -1,3 +1,5 @@
+import random
+
 from channels.db import database_sync_to_async
 from rest_framework.authtoken.models import Token
 
@@ -45,6 +47,7 @@ def _get_character_name(mongo_room_id, user_token):
                 return player_figure.character.name
     return None
 
+
 @database_sync_to_async
 def _get_websocket_channel_ids(room_id):
     return list(PlayerInRoom.objects.filter(room_id=room_id).values_list('websocket_channel_id', flat=True))
@@ -62,3 +65,7 @@ def _get_figure_id_by_user_token(mongo_room_id, user_token):
     for figure in room.player_figures:
         if figure.character and figure.character.user_token == user_token:
             return figure.id
+
+
+def randomize_1_to_20():
+    return random.randint(1, 20)

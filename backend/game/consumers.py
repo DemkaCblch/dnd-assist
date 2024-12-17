@@ -9,7 +9,7 @@ from mongoengine import DoesNotExist
 from rest_framework.authtoken.models import Token
 
 from game.consumers_utils import _room_exists, _get_master_token, _can_join_room, _set_player_ws_channel, \
-    _get_character_name, _get_websocket_channel_ids, _get_figure_id_by_user_token
+    _get_character_name, _get_websocket_channel_ids, _get_figure_id_by_user_token, randomize_1_to_20
 from game.tasks import add_item, delete_item, change_turn_master, change_turn_player, change_character_stats, \
     change_figure_position, delete_entity_from_room
 from game.consumers_utils import _master_disconnect
@@ -133,7 +133,9 @@ class RoomConsumer(AsyncWebsocketConsumer):
                 else:
                     character_name = _get_character_name(mongo_room_id=data["mongo_room_id"], user_token=self.token_key)
                     await self.send_message_send_info(name=character_name, message=data["message"])
-
+            elif action == "roll":
+                roll = randomize_1_to_20()
+                await self.roll_send_info(name="Room", roll=roll)
 
             else:
                 await self.send(text_data=json.dumps({"message": "Unknown action."}))
@@ -199,6 +201,12 @@ class RoomConsumer(AsyncWebsocketConsumer):
                                             {"type": "handler_send_message_send_info",
                                              "name": name,
                                              "message": message})
+
+    async def roll_send_info(self, name, roll):
+        await self.channel_layer.group_send(self.room_group_name,
+                                            {"type": "handler_send_message_send_info",
+                                             "name": name,
+                                             "message": f"You have roll {roll}"})
 
     """ === Методы для работы с фигуркой === """
 
