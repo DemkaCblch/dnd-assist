@@ -158,7 +158,7 @@ services:
     environment:
       - REDIS_PASS=admin
     volumes:
-      - /usr/dnd-assist/redis:/data
+      - redis-data:/data
     ports:
       - '6379:6379'
     networks:
@@ -169,12 +169,12 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    command: [ "redis-server", "--requirepass", "admin" ]
 
 volumes:
   db-data:
   pgadmin-data:
   mongodb:
+  redis-data:
   app:
 
 networks:

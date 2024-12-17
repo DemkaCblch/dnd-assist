@@ -45,6 +45,7 @@ WSGI_APPLICATION = 'dnd_assist.wsgi.application'
 ASGI_APPLICATION = 'dnd_assist.asgi.application'
 CORS_ALLOW_ALL_ORIGINS = True
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -81,7 +82,7 @@ DATABASES = {
         'NAME': 'dnd-assist',
         'USER': 'admin',
         'PASSWORD': 'admin',
-        'HOST': '127.0.0.1',
+        'HOST': 'psql',
         'PORT': '5432',
     }
 }
