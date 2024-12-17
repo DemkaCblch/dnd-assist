@@ -37,28 +37,28 @@ def _set_player_ws_channel(token_key, room_id, channel_name):
 
 
 @database_sync_to_async
-def _get_character_name(mongo_room_id, figure_id):
+def _get_character_name(mongo_room_id, user_token):
     room = MGRoom.objects(id=mongo_room_id).only('player_figures').first()
     if room:
-        player_figure = next((pf for pf in room.player_figures if pf.id == figure_id), None)
+        player_figure = next((pf for pf in room.player_figures.character.user_token if pf.id == user_token), None)
         if player_figure and player_figure.character:
             character_name = player_figure.character.name
     return character_name
 
 
 @database_sync_to_async
-def get_websocket_channel_ids(room_id):
+def _get_websocket_channel_ids(room_id):
     return list(PlayerInRoom.objects.filter(room_id=room_id).values_list('websocket_channel_id', flat=True))
 
 
 @database_sync_to_async
-def master_disconnect(room_id):
+def _master_disconnect(room_id):
     room = Room.objects.get(id=room_id)
     room.room_status = "Saved"
     room.save()
 
 
-def get_figure_id_by_user_token(mongo_room_id, user_token):
+def _get_figure_id_by_user_token(mongo_room_id, user_token):
     room = MGRoom.objects(id=mongo_room_id).only('player_figures').first()
     for figure in room.player_figures:
         if figure.character and figure.character.user_token == user_token:
