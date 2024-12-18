@@ -124,12 +124,9 @@ class GetEntityAPIView(APIView):
     )
     def get(self, request, *args, **kwargs):
         user_token = request.auth
-        try:
-            entity = Entity.objects.get(user_token=user_token)
-            return Response(EntitySerializer(entity).data, status=status.HTTP_200_OK)
-        except Entity.DoesNotExist:
-            return Response({'error': 'Entity not found.'}, status=status.HTTP_404_NOT_FOUND)
-
+        entity = Entity.objects.filter(user_token=user_token)
+        serializer = EntitySerializer(entity)
+        return Response(serializer.data)
 
 class GetAllEntitiesAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -154,3 +151,4 @@ class GetAllEntitiesAPIView(APIView):
             return Response(EntitySerializer(entities, many=True).data, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Entity not found.'}, status=status.HTTP_404_NOT_FOUND)
+
