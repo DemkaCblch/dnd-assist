@@ -13,7 +13,7 @@ const App = () => {
       <AuthProvider>
         <Navbar />
         {routes}
-        <Footer />
+        {/* <Footer /> */}
       </AuthProvider>
     </div>
    

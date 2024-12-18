@@ -1,3 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Didact+Gothic&display=swap');
+
+
+.rooms-list ul {
+  max-height: 300px;
+  overflow-y: auto; 
+  padding-right: 10px; 
+}
+
+.rooms-list ul::-webkit-scrollbar {
+  width: 10px;
+}
+
+.rooms-list ul::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+  border-radius: 5px;
+}
+
+.rooms-list ul::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+.rooms-list ul::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+
 .header {
     text-align: center;
     padding: 2rem;
@@ -6,12 +35,13 @@
   
   .title {
     font-size: 3rem;
-    font-family: 'Fantasy', serif;
+    font-family: 'Didact Gothic';
   }
   
   .description {
     font-size: 1.5rem;
     margin-top: 1rem;
+    font-family: 'Didact Gothic';
   }
 
   .buttons-container {
@@ -24,18 +54,31 @@
     padding: 1rem 2rem;
     font-size: 1.2rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
   
   .create-room {
-    background-color: #4CAF50;
+    background-color: rgb(68, 58, 55, 0.8);
     color: white;
   }
+
+  input{
+    transition:all 0.3s ease;
+    border : none;
+  }
+
+  input:focus {
+    transform: scale(1.05, 1.05);
+    outline: none;
+    border: 1px #000 ;
+    border-style: ridge;
+  }
+  
   
   .create-room:hover {
-    background: rgb(30, 196, 30, 0.7);
+    background: rgb(219, 122, 83, 0.7);
     box-shadow: none;
     position: relative;
     top: 5px;
@@ -64,6 +107,7 @@
     flex-direction: column;
     color: #e8e0e0; 
     text-align: center; 
+    font-family: 'Didact Gothic';
   }
 
 
@@ -75,13 +119,14 @@
   }
 
 /* Оверлей фона */
-.modal-overlay {
+.modal-overlay-main {
   position: fixed; 
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5); 
+  
   display: flex;
   justify-content: center; 
   align-items: center; 
@@ -89,13 +134,14 @@
 }
 
 /* Модальное окно */
-.modal-content {
+.modal-content-main {
   background-color: #494949; 
   padding: 20px;
+  max-height: 20vh;
   border-radius: 8px;
   width: 30%; 
   height: 25%;
-  justify-content: bottom;
+  justify-content: center;
   text-align: center;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Легкая тень */
   z-index: 1001; 
@@ -116,6 +162,39 @@
 
 .modal-close-button:hover {
   color: #000; 
+}
+
+.modal-content-main input{
+  width: 80%;
+  text-align: center;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.5); 
+  color: #333;
+  font-size: 16px;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2); 
+}
+
+.modal-actions button{
+  margin-top: 20px;
+  border-radius: 10px;
+  width: 30%;
+  border: none;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2); 
+
+}
+
+.modal-actions button:hover{
+  margin-top: 20px;
+  border-radius: 10px;
+  width: 30%;
+  border: none;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2); 
+
 }
 
 /* Ошибка текста */
