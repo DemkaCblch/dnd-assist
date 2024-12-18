@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth';
 // import Lobby from './Lobby';
 import apiClient from '../apiClient';
+import { toast, ToastContainer } from "react-toastify";
 
 interface Room {
   id: BigInteger;
@@ -81,7 +82,7 @@ const Main = () => {
 
   const handleSubmitRoom = async () => {
     if (!roomName) {
-      setError('Введите название комнаты');
+      toast.error('Введите название комнаты');
       return;
     }
   
@@ -95,7 +96,7 @@ const Main = () => {
       navigate(`lobby/${selectedRoomID}`);
     } catch (err) {
       console.error('Ошибка при создании комнаты:', err);
-      setError('Ошибка при создании комнаты');
+      toast.error('Ошибка при создании комнаты');
     }
   };
   
@@ -179,10 +180,10 @@ const Main = () => {
   
         navigate(`lobby/${selectedRoomId}`);
       } else {
-        console.error('Ошибка при присоединении к комнате');
+        toast.error('Ошибка при присоединении к комнате');
       }
     } catch (err) {
-      console.error('Ошибка при отправке запроса:', err);
+      toast.error(`Ошибка при отправке запроса:, ${err}`);
     }
   };
 
@@ -193,8 +194,8 @@ const Main = () => {
     <div className="MainBase">
       {/* Модальное окно */}
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+        <div className="modal-overlay-main">
+          <div className="modal-content-main">
             {/* Кнопка закрытия */}
             <button className="modal-close-button" onClick={handleCloseModal}>
               ×
@@ -209,7 +210,6 @@ const Main = () => {
             <div className="modal-actions">
               <button onClick={handleSubmitRoom}>Создать</button>
             </div>
-            {error && <p className="error">{error}</p>}
           </div>
         </div>
       )}
@@ -342,6 +342,7 @@ const Main = () => {
           <p>Нет доступных комнат</p>
         )}
       </div>
+       <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </div>
   );
 };

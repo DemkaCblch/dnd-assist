@@ -8,53 +8,6 @@
   box-sizing: border-box;
 }
 
-.create-button {
-  margin-bottom: 20px;
-  padding: 10px 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.create-button:hover {
-  background-color: #45a049;
-}
-
-.user-info {
-  margin-bottom: 20px;
-}
-
-  /* Список персонажей */
-.characters-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.character-item {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 15px;
-  background-color: #f9f9f9;
-  cursor: pointer;
-  transition: box-shadow 0.3s;
-}
-
-.character-item:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.character-item h2 {
-  margin: 0 0 10px;
-}
-
-.character-item p {
-  margin: 0;
-}
-
 /* Модальное окно */
 .modal-overlay {
   position: fixed;
@@ -120,4 +73,100 @@
   width: 100%;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+/* Общий контейнер */
+.profile {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  font-family: Arial, sans-serif;
+  height: calc(100vh - 64px);
+  background-color: #f7f8fc;
+}
+
+/* Левая колонка: фото и информация пользователя */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 300px;
+  text-align: center;
+}
+
+.user-info img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin-bottom: 1rem;
+  object-fit: cover;
+}
+
+.user-info p {
+  margin: 0.5rem 0;
+  color: #333;
+}
+
+/* Кнопка "Создать персонажа" */
+.create-button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: #ff7b7b;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  max-height: 10vh;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.create-button:hover {
+  background-color: #ff4a4a;
+}
+
+/* Правая колонка: список персонажей */
+.characters-list {
+  flex-grow: 1;
+  margin-left: 10px;
+  background-color: #fff;
+  padding: 20px;
+  max-height: calc(90vh -64 px);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.character-item {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 5px;
+  background-color: #f1f3f7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.character-item:hover {
+  background-color: #e0e5ec;
+}
+
+.character-item h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.character-item p {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.error {
+  color: red;
+  margin-top: 1rem;
+  font-size: 0.9rem;
 }

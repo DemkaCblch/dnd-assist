@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import apiClient from "../apiClient";
 import WebSocketService from "../Services/wsservice";
+import { toast, ToastContainer } from "react-toastify";
 interface Room {
   id: number;
   name: string;
@@ -31,13 +32,13 @@ const Lobby: React.FC = () => {
         );
 
         if (!selectedRoom) {
-          throw new Error("Комната не найдена");
+          throw toast.error("Комната не найдена");
         }
 
         setRoom(selectedRoom);
       } catch (err) {
         console.error(err);
-        setError("Не удалось загрузить данные комнаты");
+        toast.error("Не удалось загрузить данные комнаты");
       } finally {
         setLoading(false);
       }

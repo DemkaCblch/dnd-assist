@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import { AuthService } from "../Services/AuthService";
 import "./Login.css";
+import { toast, ToastContainer } from "react-toastify";
 
 const Login: React.FC = () => {
   const { setAuth } = useAuth();
@@ -17,14 +18,13 @@ const Login: React.FC = () => {
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
 
     if (isRegistering) {
       const result = await AuthService.register(username, password, email);
       if (result.success) {
         setIsRegistering(false);
       } else {
-        setError(result.error || "Ошибка регистрации");
+        toast.error(result.error);
       }
     } else {
       const result = await AuthService.login(username, password);
@@ -33,7 +33,7 @@ const Login: React.FC = () => {
         localStorage.setItem("authToken", result.token || "");
         navigate(from, { replace: true });
       } else {
-        setError(result.error || "Ошибка логина");
+        toast.error(result.error);
       }
     }
   };
@@ -83,6 +83,7 @@ const Login: React.FC = () => {
           {isRegistering ? "Уже есть аккаунт? Войти" : "Регистрация"}
         </button>
       </form>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </div>
   );
 };
