@@ -66,6 +66,7 @@ const Profile = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreateEModalOpen, setIsCreateEModalOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [newCharacter, setNewCharacter] = useState<Character>({
     id: 0,
@@ -146,6 +147,14 @@ const Profile = () => {
     setIsCreateModalOpen(true);
   };
 
+  const openCreateEModal = () => {
+    setIsCreateEModalOpen(true);
+  };
+
+  const closeCreateEModal = () => {
+    setIsCreateEModalOpen(false);
+  };
+
   const closeCreateModal = () => {
     setIsCreateModalOpen(false);
   };
@@ -176,40 +185,50 @@ const Profile = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
   
+    // Проверяем, если поле относится к статистике персонажа
     if (name in newCharacter.character_stats) {
-      // Если поле числовое, преобразуем значение, иначе сохраняем как текст
-      const isNumericField = ["hp", "level","mana", "intelligence", "strength", "dexterity", "constitution", "wisdom", "resistance", "stability", "charisma"].includes(name);
+      const isNumericField = [
+        "hp", "level", "mana", "intelligence", "strength",
+        "dexterity", "constitution", "wisdom", "resistance", 
+        "stability", "charisma",
+      ].includes(name);
   
       setNewCharacter((prev) => ({
         ...prev,
         character_stats: {
           ...prev.character_stats,
-          [name]: isNumericField ? (value === "" ? "" : Number(value)) : value,
+          [name]: isNumericField ? Number(value) : value, // Преобразуем числовые поля
         },
       }));
-    } else {
-      setNewCharacter((prev) => ({
-        ...prev,
-        [name]: value, // Для обычных полей оставляем значение как есть
-      }));
     }
-  };/*else if (name in newEntity.entity_stats) {
+    // Проверяем, если поле относится к статистике существа
+    else if (name in newEntity.entity_stats) {
       const isNumericField = ["hp", "level", "resistance", "stability"].includes(name);
   
       setNewEntity((prev) => ({
         ...prev,
         entity_stats: {
           ...prev.entity_stats,
-          [name]: isNumericField ? (value === "" ? "" : Number(value)) : value,
+          [name]: isNumericField ? Number(value) : value, // Преобразуем числовые поля
         },
       }));
-    } else {
-      setNewEntity((prev) => ({
+    }
+    // Если поле - это имя персонажа
+    else if (name === "name" && newCharacter) {
+      setNewCharacter((prev) => ({
         ...prev,
-        [name]: value,
+        [name]: value, // Обновляем имя персонажа
       }));
     }
-  };*/
+    // Если поле - это имя существа
+    else if (name === "name" && newEntity) {
+      setNewEntity((prev) => ({
+        ...prev,
+        [name]: value, // Обновляем имя существа
+      }));
+    }
+  };
+  
   
   
   
@@ -262,7 +281,7 @@ const Profile = () => {
           <p>У вас нет созданных существ</p>
           
         )}
-        <button className="create-button" onClick={openCreateModal}>
+        <button className="create-button" onClick={openCreateEModal}>
           Создать существо
         </button>
       </div>
@@ -442,13 +461,13 @@ const Profile = () => {
           </div>
         </div>
       )}
-    {/*  {isCreateModalOpen && (
-        <div className="modal-overlay" onClick={closeCreateModal}>
+      {isCreateEModalOpen && (
+        <div className="modal-overlay" onClick={closeCreateEModal}>
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()} // Остановка всплытия события
           >
-            <button className="modal-close-button" onClick={closeCreateModal}>
+            <button className="modal-close-button" onClick={closeCreateEModal}>
               ×
             </button>
             <h2>Создать существо</h2>
@@ -508,7 +527,7 @@ const Profile = () => {
             <button onClick={handleCreateEntity}>Создать</button>
           </div>
         </div>
-      )}*/} 
+      )}
       {selectedEntity && (
         <div className="modal-overlay" onClick={() => setSelectedEntity(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

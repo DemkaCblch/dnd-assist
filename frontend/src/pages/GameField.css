@@ -10,6 +10,10 @@
   border-radius: 8px;
 }
 
+.chat-messages{
+  background-color: rgba(17, 34, 51, 0.329);
+}
+
 .game-container {
   display: flex;
   flex-direction: column;

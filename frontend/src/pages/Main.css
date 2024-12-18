@@ -64,12 +64,14 @@
     color: white;
   }
 
-  input{
+  
+
+  .create-room input{
     transition:all 0.3s ease;
     border : none;
   }
 
-  input:focus {
+  .create-room input:focus {
     transform: scale(1.05, 1.05);
     outline: none;
     border: 1px #000 ;
