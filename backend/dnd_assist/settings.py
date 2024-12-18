@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from mongoengine import connect
 
@@ -119,6 +120,7 @@ USE_I18N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = 'static/'
 
 # Default primary key field type
@@ -143,19 +145,6 @@ CACHES = {
         }
     }
 }
-
-# Подключение MinIO
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-AWS_ACCESS_KEY_ID = 'admin'
-AWS_SECRET_ACCESS_KEY = 'admin123'
-AWS_STORAGE_BUCKET_NAME = 'dnd-assist-files'
-AWS_S3_ENDPOINT_URL = 'http://dnd-assist-minio-1:9000'
-AWS_S3_REGION_NAME = ''
-AWS_S3_USE_SSL = False
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-
-MEDIA_URL = f'http://localhost:9000/{AWS_STORAGE_BUCKET_NAME}/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
