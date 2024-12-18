@@ -91,7 +91,7 @@ connect(
     db='DNDAssist',
     username='admin',
     password='admin',
-    host='localhost',
+    host='mongo',
     port=27017,
     uuidRepresentation="standard"
 )

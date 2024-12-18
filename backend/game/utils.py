@@ -57,6 +57,7 @@ async def migrate_room_to_mongo(room_id):
             )
             for char_data in characters_with_stats
         ]
+        print(f"TEST")
         mongo_room = MGRoom(
             name=room.name,
             room_id=room_id,
