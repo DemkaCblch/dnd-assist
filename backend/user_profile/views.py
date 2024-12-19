@@ -114,7 +114,7 @@ class GetEntityAPIView(APIView):
         responses={
             200: openapi.Response(
                 description="Данные сущности",
-                schema=EntitySerializer,
+                schema=EntitySerializer(many=True),  # Указываем many=True для обработки списка сущностей
             ),
             404: openapi.Response(
                 description="Сущность не найдена",
@@ -124,9 +124,14 @@ class GetEntityAPIView(APIView):
     )
     def get(self, request, *args, **kwargs):
         user_token = request.auth
-        entity = Entity.objects.filter(user_token=user_token)
-        serializer = EntitySerializer(entity)
+        entities = Entity.objects.filter(user_token=user_token)
+
+        if not entities:
+            return Response({"error": "Entity not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = EntitySerializer(entities, many=True)
         return Response(serializer.data)
+
 
 class GetAllEntitiesAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -151,4 +156,3 @@ class GetAllEntitiesAPIView(APIView):
             return Response(EntitySerializer(entities, many=True).data, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Entity not found.'}, status=status.HTTP_404_NOT_FOUND)
-
