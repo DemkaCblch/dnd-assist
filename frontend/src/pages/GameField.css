@@ -50,7 +50,7 @@ body{
 
 /* Верхняя панель с персонажами */
 .player-panel {
-  background-color:rgba(255, 255, 255, 0.3);
+  background-color:linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.321));
   padding: 10px;
   text-align: center;
   border-bottom: 2px solid #ccc;
@@ -58,13 +58,15 @@ body{
 }
 
 .turn-controls{
-  background-color: rgb(104, 124, 143);
+  background-color: rgba(104, 124, 143, 0.299);
   border: none;
   border-radius: 5px;
 }
 
 .player-panel h3{
+  margin-top: 5px;
   max-height: 5px;
+  color: antiquewhite;
 
 }
 
@@ -86,6 +88,9 @@ body{
   width: 200px;
   text-align: center;
   margin: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   height: 150px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
@@ -189,10 +194,11 @@ body{
   border: 3px solid black;
   border-radius: 5px;
   position: relative;
-  background-image: url(../../public/table.webp);
+  /*background-image: url(../../public/table.webp);
   background-size: cover; 
     background-position: center; 
-    background-repeat: no-repeat;
+    background-repeat: no-repeat;*/
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.9));
 }
 
 /* Клетки поля */
@@ -226,7 +232,6 @@ body{
   color: white;
   z-index: 1;
   white-space: nowrap;
-  text-overflow: ellipsis;
   overflow: hidden;
 }
 
@@ -271,6 +276,7 @@ body{
   width: 300px;
   text-align: center;
   position: relative;
+  align-items: center;
 }
 
 .modal-content h3 {
@@ -280,6 +286,7 @@ body{
 .modal-content label {
   display: block;
   margin-bottom: 10px;
+  width: 80%;
 }
 
 .modal-content input {

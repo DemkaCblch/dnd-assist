@@ -386,21 +386,18 @@ const GameField: React.FC = () => {
     });
   };
 
-  const renderBar = (current: number, max: number, color: string, label: string) => {
+  const renderBar = (current: number, max: number, color: string) => {
     const percentage = (current / max) * 100;
     return (
-      <div className="stat-bar-container">
-        <span className="stat-bar-label">{label}:</span>
-        <div className="stat-bar">
-          <div
-            style={{
-              width: `${percentage}%`,
-              backgroundColor: color,
-              textAlign: 'center',
-            }}
-          >
-            {current}/{max}
-          </div>
+      <div className="stat-bar">
+        <div
+          style={{
+            width: `${percentage}%`,
+            backgroundColor: color,
+            textAlign: 'center',
+          }}
+        >
+          {current}/{max}
         </div>
       </div>
     );
@@ -492,8 +489,10 @@ const GameField: React.FC = () => {
           {players.map((player) => (
             <div key={player.id} className="player-item">
               <p><strong>{player.name}</strong></p>
-              {renderBar(player.hp, player.maxHp, 'red', 'HP')}
-              {renderBar(player.mana, player.maxMana, 'blue', 'Mana')}
+              <span>HP:</span>
+              {renderBar(player.hp, player.maxHp, 'red')}
+              <span>Mana:</span>
+              {renderBar(player.mana, player.maxMana, 'blue')}
             </div>
           ))}
         </div>
