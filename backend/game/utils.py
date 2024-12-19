@@ -43,21 +43,21 @@ async def migrate_room_to_mongo(room_id):
         players_figures = [
             MGPlayerFigures(
                 name=char_data["name"],
-                picture_url="placeholder_url",  # Здесь можно заменить на реальный URL или поле
-                posX=1,  # Начальные координаты, заменить на нужные значения
-                posY=1,  # Начальные координаты, заменить на нужные значения
+                picture_url="placeholder_url",
+                posX=x,
+                posY=y,
                 character=MGCharacter(
                     name=char_data["name"],
                     websocket_channel_id=char_data["websocket_channel_id"],
                     status=char_data["status"],
                     user_token=char_data["user_token"],
-                    backpack=MGBackpack(),  # Пустой рюкзак на начало
+                    backpack=MGBackpack(),
                     stats=MGCharacterStats(**char_data["stats"])
                 )
             )
-            for char_data in characters_with_stats
+            for idx, char_data in enumerate(characters_with_stats)
+            if (x := (idx % 20) + 1) and (y := (idx // 20) + 1)
         ]
-        print(f"TEST")
         mongo_room = MGRoom(
             name=room.name,
             room_id=room_id,

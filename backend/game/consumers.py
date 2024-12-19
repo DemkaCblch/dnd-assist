@@ -150,8 +150,6 @@ class RoomConsumer(AsyncWebsocketConsumer):
             has_players = await database_sync_to_async(PlayerInRoom.objects.filter(room=room).exists)()
             if not has_players:
                 raise ValueError("No players to start the game.")
-            room.room_status = "In Progress"
-            room.launches += 1
             await database_sync_to_async(room.save)()
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -159,6 +157,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
             )
             if room.launches == 0:
                 self.mongo_room_id = await migrate_room_to_mongo(room_id=self.room_id)
+            room.room_status = "In Progress"
+            room.launches += 1
             # Отослать всем игрокам информацию об игре
             await self.room_data_send_info(self.mongo_room_id)
         else:
