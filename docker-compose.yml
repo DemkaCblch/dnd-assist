@@ -119,39 +119,21 @@ services:
       retries: 3
       start_period: 30s
 
-  celery:
-    build: ./backend
-    container_name: celery
-    command: celery -A dnd_assist worker --loglevel=info --pool=solo
-    depends_on:
-      - rabbitmq
-      - django
-    networks:
-      - gateway
-
   django:
-    build: ./backend
+    build:
+      context: ./
+      dockerfile: backend/Dockerfile
     container_name: django
-    command: |
-      bash -c "
-        python backend/manage.py makemigrations room &&
-        python backend/manage.py makemigrations user_profile &&
-        python backend/manage.py migrate &&
-        python backend/manage.py collectstatic --no-input &&
-        find . -type d -name __pycache__ -exec rm -r {} + &&
-        rm -rf /root/.cache /tmp/* &&
-        python backend/manage.py runserver 0.0.0.0:8000
-      "
-    ports:
-      - '8000:8000'
     volumes:
-      - .:/usr/src/app
-    networks:
-      - gateway
+      - ./backend:/usr/src/app/backend
+    ports:
+      - "8000:8000"
     depends_on:
+      - psql
       - redis
       - rabbitmq
-      - psql
+    networks:
+      - gateway
 
   redis:
     image: redis:7.4-alpine

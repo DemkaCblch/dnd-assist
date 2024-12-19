@@ -9,7 +9,8 @@ WORKDIR /usr/src/app
 
 RUN pip install --upgrade pip
 
-COPY requirements.txt .
+# Copy requirements file and install dependencies
+COPY backend/requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -26,10 +27,25 @@ COPY --from=builder /usr/local/lib/python3.10/site-packages/ /usr/local/lib/pyth
 COPY --from=builder /usr/local/bin/ /usr/local/bin/
 
 # Copy only necessary project files
-COPY . .
+COPY backend/ /usr/src/app/backend/
 
+# Установить рабочую директорию для Django
+WORKDIR /usr/src/app/backend/
+
+# Собрать статические файлы
+RUN python manage.py collectstatic --no-input \
+   && find . -type d -name __pycache__ -exec rm -r {} + \
+   && rm -rf /root/.cache /tmp/*
+
+# Expose the port the app runs on
 EXPOSE 8000
 
-HEALTHCHECK --interval=10s --timeout=5s --retries=5 CMD curl --fail http://localhost:8000/admin || exit 1
+# Скопировать entrypoint.sh и сделать его исполнимым
+COPY backend/entrypoint.sh /usr/src/app/entrypoint.sh
+RUN chmod +x /usr/src/app/entrypoint.sh
 
-WORKDIR /usr/src/app
+# Установить entrypoint для контейнера
+ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+
+# Healthcheck to monitor the health of the running application
+HEALTHCHECK --interval=10s --timeout=5s --retries=5 CMD curl --fail http://localhost:8000/admin || exit 1
