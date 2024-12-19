@@ -3,10 +3,7 @@ import json
 import uuid
 
 from channels.db import database_sync_to_async
-from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from mongoengine import DoesNotExist
-from rest_framework.authtoken.models import Token
 
 from game.consumers_utils import _room_exists, _get_master_token, _can_join_room, _set_player_ws_channel, \
     _get_character_name, _get_websocket_channel_ids, _get_figure_id_by_user_token, randomize_1_to_20
@@ -153,8 +150,8 @@ class RoomConsumer(AsyncWebsocketConsumer):
             has_players = await database_sync_to_async(PlayerInRoom.objects.filter(room=room).exists)()
             if not has_players:
                 raise ValueError("No players to start the game.")
-            # room.room_status = "In Progress"
-            # room.launches += 1
+            room.room_status = "In Progress"
+            room.launches += 1
             await database_sync_to_async(room.save)()
             await self.channel_layer.group_send(
                 self.room_group_name,
