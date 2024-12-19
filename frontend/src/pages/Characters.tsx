@@ -235,7 +235,7 @@ const Profile = () => {
       {userProfile && (
         <div className="user-info">
           <h1>Личный кабинет</h1>
-        <img src="../../public/player.jpg" alt="User Avatar" />
+        <img src="/player.jpg" alt="User Avatar" />
         <p><strong>Имя пользователя:</strong> {userProfile.username}</p>
         <p><strong>Дата регистрации:</strong> {new Date(userProfile.date_joined).toLocaleDateString()}</p>
         </div>
@@ -430,7 +430,7 @@ const Profile = () => {
               </label>
             </div>
 
-            <button onClick={handleCreateCharacter}>Создать</button>
+            <button className="abtn" onClick={handleCreateCharacter}>Создать</button>
           </div>
         </div>
       )}
@@ -523,7 +523,7 @@ const Profile = () => {
               </label>
             </div>
 
-            <button onClick={handleCreateEntity}>Создать</button>
+            <button className="abtn" onClick={handleCreateEntity}>Создать</button>
           </div>
         </div>
       )}
