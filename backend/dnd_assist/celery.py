@@ -6,6 +6,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dnd_assist.settings')
 app = Celery('dnd_assist')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
+broker_connection_retry_on_startup = True
 
 
 @app.task(bind=True)
