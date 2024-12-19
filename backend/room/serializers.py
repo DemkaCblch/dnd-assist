@@ -1,6 +1,6 @@
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
-from room.models import Room, PlayerInRoom
+from room.models import Room
 from user_profile.models import Character
 
 

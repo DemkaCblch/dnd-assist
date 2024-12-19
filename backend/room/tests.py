@@ -5,7 +5,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.reverse import reverse
 
 from user_profile.models import Character, CharacterStats
-from room.models import Room, PlayerInRoom, Chat
+from room.models import Room, PlayerInRoom
 from rest_framework.test import APITestCase
 from django.test import TestCase
 from mongoengine import connect, disconnect
@@ -203,31 +203,6 @@ class PlayerInRoomModelTest(TestCase):
         )
         self.assertEqual(str(player_in_room),
                          f"PlayerInRoom object ({player_in_room.id})")
-
-
-class ChatModelTest(TestCase):
-
-    def setUp(self):
-        self.master_user = User.objects.create_user(username="master_user", password="password")
-        self.master_token = Token.objects.create(user=self.master_user)
-        self.room = Room.objects.create(
-            name="Test Room",
-            room_status="Waiting",
-            master_token=self.master_token,
-            launches=0
-        )
-
-    def test_create_chat(self):
-        chat = Chat.objects.create(
-            room=self.room
-        )
-        self.assertEqual(str(chat), f"Chat object ({chat.id})")
-
-    def test_chat_str_method(self):
-        chat = Chat.objects.create(
-            room=self.room
-        )
-        self.assertEqual(str(chat), f"Chat object ({chat.id})")
 
 
 

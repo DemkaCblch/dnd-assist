@@ -24,7 +24,7 @@ class EntityStatsSerializer(serializers.ModelSerializer):
 
 
 class CharacterSerializer(serializers.ModelSerializer):
-    character_stats = CharacterStatsSerializer()  # Вложенный сериализатор
+    character_stats = CharacterStatsSerializer()
 
     class Meta:
         model = Character
@@ -45,7 +45,6 @@ class CharacterSerializer(serializers.ModelSerializer):
         return character
 
     def update(self, instance, validated_data):
-        # Обновление вложенных данных (если есть)
         character_stats_data = validated_data.pop('character_stats', None)
         if character_stats_data and instance.character_stats:
             stats_serializer = CharacterStatsSerializer(instance.character_stats, data=character_stats_data)
