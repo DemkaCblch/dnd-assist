@@ -6,12 +6,11 @@
     top: 60px;
     left: 0;
     width: 100%;
-    height: 100%;
     background: radial-gradient(circle, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.9));
     pointer-events: none; /* Чтобы не мешать взаимодействию с формой */
     z-index: 1; /* За основным контентом */
     filter: blur(4px);
-    max-height: 1459px;
+    height: calc(100vh-60px)
 }
 
 

@@ -1,34 +1,42 @@
-.controls {
-  display: flex;
-  flex-direction: row;
-  gap: 10px;
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: rgba(255, 255, 255, 0.8);
-  padding: 10px;
-  border-radius: 8px;
+@import url('https://fonts.googleapis.com/css2?family=Didact+Gothic&display=swap');
+
+body{
+  font-family: 'Didact Gothic';
+  z-index: 2;
+}
+
+.button-container {
+  display: flex; 
+  justify-content: flex-start;
+  align-items: center; 
+  gap: 10px; 
+  position: absolute; 
+  right: 320px; 
+  bottom: 20px; 
+  z-index: 10; 
 }
 
 .chat-messages {
-  background-color: rgba(17, 34, 51, 0.7); /* Полупрозрачный фон */
-  border-radius: 8px;
   padding: 10px;
   overflow-y: auto;
-  max-height: 300px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 5px;
+  font-family: 'Didact Gothic';
 }
 
 .chat-messages div {
-  background: rgba(255, 255, 255, 0.8);
+  color: #EDEDEF;
   padding: 5px 10px;
   border-radius: 5px;
   margin-bottom: 5px;
   font-size: 14px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  font-family: 'Didact Gothic';
 }
 
 .chat-messages div strong {
   color: #003366; /* Цвет имени */
+  font-family: 'Didact Gothic';
 }
 
 .game-container {
@@ -108,19 +116,28 @@
   background-size: cover; 
   background-position: center; 
   background-repeat: no-repeat;
+  background-color: rgba(17, 34, 51, 0.4); /* Полупрозрачный фон */
+  border-radius: 8px;
+  z-index: 2;
 }
 
 .chat-input{
   margin-bottom: 10px;
-  background-color: rgba(0, 0, 0, 0.5)
 }
 
 .chat-input input{
-  background-color: rgba(255, 255, 255, 0.5)
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  font-family: 'Didact Gothic';
 }
 
 .chat-input button{
-  background-color: rgba(255, 255, 255, 0.447)
+  background-color: rgba(255, 255, 255, 0.447);
+  border-radius: 8px;
+  border: none;
+  font-family: 'Didact Gothic';
 }
 /* Область с полем и чатом */
 .game-area {
@@ -130,10 +147,12 @@
   background: #3e1f1f;
   padding: 20px;
   box-sizing: border-box;
-  background-image: url(../../public/table.webp);
+  /* background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0)); */
+  background-image: url("../../public/tavern.webp");
   background-size: cover; 
     background-position: center; 
     background-repeat: no-repeat;
+    z-index: 0;
 }
 
 .game-field-container {
@@ -144,14 +163,20 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 2;
 
 }
 
 /* Игровое поле */
 .game-field {
   display: grid;
-  border: 1px solid black;
+  border: 3px solid black;
+  border-radius: 5px;
   position: relative;
+  background-image: url(../../public/table.webp);
+  background-size: cover; 
+    background-position: center; 
+    background-repeat: no-repeat;
 }
 
 /* Клетки поля */

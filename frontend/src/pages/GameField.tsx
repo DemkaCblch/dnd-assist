@@ -499,7 +499,6 @@ const GameField: React.FC = () => {
       </div>
 
       <div className="game-area">
-
         <div onClick={hideContextMenu} className="game-field-container">
           <div
             className="game-field"
@@ -561,98 +560,11 @@ const GameField: React.FC = () => {
               })
             )}
           </div>
-
+          <div className="button-container">
           <button className="add-token-btn" onClick={() => setIsModalOpen(true)}>
             Добавить фигурку
           </button>
-          {isModalOpen && (
-            <div className="modal">
-              <div className="modal-content">
-                <span className="close" onClick={() => setIsModalOpen(false)}>
-                  &times;
-                </span>
-                <h3>Добавить врага</h3>
-                <label>
-                  ID врага:
-                  <input
-                    type="text"
-                    value={enemyId}
-                    onChange={(e) => setEnemyId(e.target.value)}
-                  />
-                </label>
-                <label>
-                  X:
-                  <input
-                    type="number"
-                    value={newTokenX}
-                    min="0"
-                    max={gridWidth - 1}
-                    onChange={(e) => setNewTokenX(Number(e.target.value))}
-                  />
-                </label>
-                <label>
-                  Y:
-                  <input
-                    type="number"
-                    value={newTokenY}
-                    min="0"
-                    max={gridHeight - 1}
-                    onChange={(e) => setNewTokenY(Number(e.target.value))}
-                  />
-                </label>
-                <button onClick={handleAddEnemy}>Добавить</button>
-              </div>
-            </div>
-          )}
-
-
-          {editingToken && (
-            <div className="modal">
-              <div className="modal-content">
-                <span className="close" onClick={() => setEditingToken(null)}>
-                  &times;
-                </span>
-                <h3>Редактировать фигурку</h3>
-                <label>
-                  Имя:
-                  <input
-                    type="text"
-                    value={editingToken.name}
-                    onChange={(e) =>
-                      setEditingToken({ ...editingToken, name: e.target.value })
-                    }
-                  />
-                </label>
-                <label>
-                  X:
-                  <input
-                    type="number"
-                    value={editingToken.x}
-                    min="0"
-                    max={gridWidth - 1}
-                    onChange={(e) =>
-                      setEditingToken({ ...editingToken, x: Number(e.target.value) })
-                    }
-                  />
-                </label>
-                <label>
-                  Y:
-                  <input
-                    type="number"
-                    value={editingToken.y}
-                    min="0"
-                    max={gridHeight - 1}
-                    onChange={(e) =>
-                      setEditingToken({ ...editingToken, y: Number(e.target.value) })
-                    }
-                  />
-                </label>
-                <button onClick={handleUpdateToken}>Сохранить</button>
-              </div>
-            </div>
-          )}
-        </div>
-        {currentMove === "Master" && (
+          {currentMove === "Master" && (
           <div className="turn-controls">
             <h4>Передать ход игроку:</h4>
             <select onChange={(e) => handleChangeTurnMaster(e.target.value)}>
@@ -662,12 +574,16 @@ const GameField: React.FC = () => {
               ))}
             </select>
           </div>
-        )}
-        {players.some((p) => p.id === currentMove) && (
+          )}
+          {players.some((p) => p.id === currentMove) && (
           <div className="turn-controls">
             <button onClick={handleChangeTurnPlayer}>Завершить ход</button>
           </div>
         )}
+        </div>
+        </div>
+        
+        
         <div className="chat-panel">
           <h3>Чат</h3>
           <div className="chat-messages" style={{flex: '1', overflowY: 'auto', marginBottom: '10px'}}>
@@ -826,7 +742,90 @@ const GameField: React.FC = () => {
           </div>
         </div>
       )}
-
+      {isModalOpen && (
+            <div className="modal">
+              <div className="modal-content">
+                <span className="close" onClick={() => setIsModalOpen(false)}>
+                  &times;
+                </span>
+                <h3>Добавить врага</h3>
+                <label>
+                  ID врага:
+                  <input
+                    type="text"
+                    value={enemyId}
+                    onChange={(e) => setEnemyId(e.target.value)}
+                  />
+                </label>
+                <label>
+                  X:
+                  <input
+                    type="number"
+                    value={newTokenX}
+                    min="0"
+                    max={gridWidth - 1}
+                    onChange={(e) => setNewTokenX(Number(e.target.value))}
+                  />
+                </label>
+                <label>
+                  Y:
+                  <input
+                    type="number"
+                    value={newTokenY}
+                    min="0"
+                    max={gridHeight - 1}
+                    onChange={(e) => setNewTokenY(Number(e.target.value))}
+                  />
+                </label>
+                <button onClick={handleAddEnemy}>Добавить</button>
+              </div>
+            </div>
+          )}
+          {editingToken && (
+            <div className="modal">
+              <div className="modal-content">
+                <span className="close" onClick={() => setEditingToken(null)}>
+                  &times;
+                </span>
+                <h3>Редактировать фигурку</h3>
+                <label>
+                  Имя:
+                  <input
+                    type="text"
+                    value={editingToken.name}
+                    onChange={(e) =>
+                      setEditingToken({ ...editingToken, name: e.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  X:
+                  <input
+                    type="number"
+                    value={editingToken.x}
+                    min="0"
+                    max={gridWidth - 1}
+                    onChange={(e) =>
+                      setEditingToken({ ...editingToken, x: Number(e.target.value) })
+                    }
+                  />
+                </label>
+                <label>
+                  Y:
+                  <input
+                    type="number"
+                    value={editingToken.y}
+                    min="0"
+                    max={gridHeight - 1}
+                    onChange={(e) =>
+                      setEditingToken({ ...editingToken, y: Number(e.target.value) })
+                    }
+                  />
+                </label>
+                <button onClick={handleUpdateToken}>Сохранить</button>
+              </div>
+            </div>
+          )}
     </div>
   );
 };
