@@ -336,7 +336,7 @@ const GameField: React.FC = () => {
     }
   
 
-    moveToken(tokenId, x, y);
+    // moveToken(tokenId, x, y);
   
 
     if (mongoRoomId) {
