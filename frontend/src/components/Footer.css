@@ -1,0 +1,17 @@
+.Footer{
+    background-color: rgb(21, 21, 21); /* Цвет фона футера */
+    color: #fff; /* Цвет текста */
+    text-align: center; /* Центровка текста */
+    padding: 0; /* Внутренний отступ */
+    height: 5vh; /* Высота 10% от высоты экрана */
+    width: 100%; /* Ширина на весь экран */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    bottom: 0;
+    /* background: url('../../public/imgs/papyrus-dark.jpg'); */
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 5px;
+}

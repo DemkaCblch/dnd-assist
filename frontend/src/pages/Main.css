@@ -1,0 +1,250 @@
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Didact+Gothic&display=swap');
+
+
+.rooms-list ul {
+  max-height: 280px;
+  overflow-y: auto; 
+  padding-right: 10px; 
+}
+
+.rooms-list ul::-webkit-scrollbar {
+  width: 10px;
+}
+
+.rooms-list ul::-webkit-scrollbar-track {
+  background: #f1f1f1; 
+  border-radius: 5px;
+}
+
+.rooms-list ul::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 5px;
+}
+
+.rooms-list ul::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+
+.header {
+    text-align: center;
+    padding: 2rem;
+    margin: 10px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
+  }
+  
+  .title {
+    font-size: 3rem;
+    font-family: 'Didact Gothic';
+  }
+  
+  .description {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+    font-family: 'Didact Gothic';
+  }
+
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+  }
+  
+  .btn-create-room {
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background: linear-gradient(45deg, #7f0000, #ff4500); /* Градиент */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-create-room:hover{
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.7); /* Свечение */
+  }
+  
+  .create-room {
+    background-color: rgb(68, 58, 55, 0.8);
+    color: white;
+  }
+
+  
+
+  .create-room input{
+    transition:all 0.3s ease;
+    border : none;
+  }
+
+  .create-room input:focus {
+    transform: scale(1.05, 1.05);
+    outline: none;
+    border: 1px #000 ;
+    border-style: ridge;
+  }
+  
+  
+  .create-room:hover {
+    background: rgb(219, 122, 83, 0.7);
+    box-shadow: none;
+    position: relative;
+    top: 5px;
+  }
+  
+  .join-room {
+    background-color: #008CBA;
+    color: white;
+  }
+  
+  .join-room:hover {
+    background: rgb(30, 196, 30, 0.7);
+    box-shadow: none;
+    position: relative;
+    top: 5px;
+  }
+
+  .MainBase{
+    background: url('../../public/imgs/backgroundddd.jpg') no-repeat center center/cover;
+    padding: 0;
+    margin: 0;
+    height: calc(100vh - 60px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: #e8e0e0; 
+    text-align: center; 
+    font-family: 'Didact Gothic';
+    max-height: 1536px;
+  }
+
+
+  .header{
+    background-color: rgba(0, 0, 0, 0.4);
+    border-style: solid;
+    border-radius: 30px;
+    border-width: 0;
+  }
+
+/* Оверлей фона */
+.modal-overlay-main {
+  position: fixed; 
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); 
+  
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  z-index: 1000; 
+}
+
+/* Модальное окно */
+.modal-content-main {
+  background-color: #494949; 
+  padding: 20px;
+  max-height: 20vh;
+  border-radius: 8px;
+  width: 30%; 
+  height: 25%;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Легкая тень */
+  z-index: 1001; 
+  position: relative; 
+}
+
+/* Кнопка закрытия */
+.modal-close-button {
+  position: absolute; 
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.modal-close-button:hover {
+  color: #000; 
+}
+
+.modal-content-main input{
+  width: 80%;
+  text-align: center;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.5); 
+  color: #333;
+  font-size: 16px;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2); 
+}
+
+.modal-actions button{
+  margin-top: 20px;
+  border-radius: 10px;
+  width: 30%;
+  border: none;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2); 
+
+}
+
+.modal-actions button:hover{
+  margin-top: 20px;
+  border-radius: 10px;
+  width: 30%;
+  border: none;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2); 
+
+}
+
+/* Ошибка текста */
+.error {
+  color: red;
+  font-size: 14px;
+}
+
+.room-item {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: hsla(0, 0%, 98%, 0.086);
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  transition: background-color 0.2s ease;
+}
+
+.room-item:hover {
+  background-color:  hsla(0, 0%, 98%, 0.307);
+}
+.join-room-button {
+  display: block;
+  margin-top: 5px;
+  padding: 5px 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.join-room-button:hover {
+  background-color: #45a049;
+}
+

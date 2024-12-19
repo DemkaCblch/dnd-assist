@@ -4,7 +4,8 @@ nav {
     justify-content: space-between;
     align-items: center; /* Центрируем по вертикали */
     padding-right: 20px; /* Отступ справа */
-    background-image: url()
+    background-color: rgb(21, 21, 21); /* Цвет фона футера */
+    /*background-image: url('../../public/imgs/papyrus-dark.jpg')*/
   }
   .nav-right {
     display: flex;
@@ -43,4 +44,14 @@ nav {
   .site-icon {
     width: 60px; /* Иконка сайта может быть больше */
     height: 60px;
-  }
+    cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.site-icon:hover{
+  transform: rotate(360deg) scale(1.2); /* Вращение и увеличение при наведении */
+}
+
+.site-icon:active{
+  transform: scale(0.9); /* Лёгкий "нажим" при клике */
+}

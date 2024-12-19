@@ -1,36 +1,92 @@
-import useAuth from '../hooks/useAuth';
-import { useLocation, useNavigate } from 'react-router-dom';
-import './Login.css'
+import React, { useState, FormEvent } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import { AuthService } from "../Services/AuthService";
+import "./Login.css";
+import { toast, ToastContainer } from "react-toastify";
 
-const Login = () => {
+const Login: React.FC = () => {
+  const { setAuth } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [isRegistering, setIsRegistering] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
+  const from = location.state?.from?.pathname || "/";
 
-  const { setAuth } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const from = location.state?.from?.pathname || '/'
+  const handleLogin = async (e: FormEvent) => {
+    e.preventDefault();
+
+    if (isRegistering) {
+      const result = await AuthService.register(username, password, email);
+      if (result.success) {
+        setIsRegistering(false);
+      } else {
+        toast.error(result.error);
+      }
+    } else {
+      const result = await AuthService.login(username, password);
+      if (result.success) {
+        setAuth(true);
+        localStorage.setItem("authToken", result.token || "");
+        navigate(from, { replace: true });
+      } else {
+        toast.error(result.error);
+      }
+    }
+  };
+
+  const handleRegisterClick = () => {
+    setIsRegistering(!isRegistering);
+  };
+
   return (
-    <div className='LoginBase'>
-      <div className='LoginWindow'>
-        <div className='LoginText'>Войти на сайт</div>
+    <div className="LoginBase">
+       <div id="fog"></div>
+      <form className="LoginWindow" onSubmit={handleLogin}>
+        <div className="LoginText">{isRegistering ? "Sign up for the adventurer's guild" : "Get ready for a new adventure"}</div>
         <input
-          className='LoginInput'
-          type='text'
-          placeholder='Логин'
+          className="LoginInput"
+          type="text"
+          placeholder="Логин"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
         />
-
-        {/* Поле для пароля */}
         <input
-          className='LoginInput'
-          type='password'
-          placeholder='Пароль'
+          className="LoginInput"
+          type="password"
+          placeholder="Пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
-        <button className='LoginBtn' type={'button'} onClick={() => {
-          setAuth(true)
-          navigate(from, { replace: true });
-        }}>Login</button>
-        </div>
+        {isRegistering && (
+          <input
+            className="LoginInput"
+            type="email"
+            placeholder="Электронная почта"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        )}
+        <button className="LoginBtn" type="submit">
+          {isRegistering ? "Зарегистрироваться" : "Войти"}
+        </button>
+        <button
+          type="button"
+          className="LoginBtn"
+          onClick={handleRegisterClick}
+        >
+          {isRegistering ? "Уже есть аккаунт? Войти" : "Регистрация"}
+        </button>
+      </form>
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </div>
-  )
-}
+  );
+};
 
-export default Login
+export default Login;
