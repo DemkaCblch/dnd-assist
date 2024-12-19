@@ -1,11 +1,13 @@
 
   /* Модальное окно */
 .modal-content input {
-  display: block;
-  margin-bottom: 10px;
-  padding: 8px;
+
   width: 100%;
-  box-sizing: border-box;
+  padding: 10px;
+  border: 2px solid #ffd700; /* Золотая рамка */
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: 16px;
 }
 
 /* Модальное окно */
@@ -57,6 +59,18 @@
 
 .modal-content li {
   margin-bottom: 10px;
+}
+
+.modal-content button{
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  background: linear-gradient(45deg, #007f00, #00ff00); /* Зелёный градиент */
+  border: 2px solid #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 .character-stats label {

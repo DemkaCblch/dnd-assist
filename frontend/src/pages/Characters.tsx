@@ -97,8 +97,7 @@ const Profile = () => {
         const response = await apiClient.get("/profile/");
         setUserProfile(response.data);
       } catch (err) {
-        console.error(err);
-        setError("Ошибка при загрузке профиля");
+        toast.error("Ошибка при загрузке профиля");
       }
     };
   
@@ -107,22 +106,17 @@ const Profile = () => {
         const response = await apiClient.get("/get-character/");
         setCharacters(response.data);
       } catch (err) {
-        console.error(err);
-        setError("Ошибка при загрузке персонажей");
+        toast.error(`Ошибка при загрузке персонажей${err}`);
       }
     };
 
     const fetchEntity = async () => {
       try {
         const response = await apiClient.get("/get-entity/");
-        console.log("Ответ API при загрузке сущностей:", response.data);
-    
-        const entities = Array.isArray(response.data) ? response.data : [response.data];
-        setEntity(entities); 
+        setEntity(response.data); 
       } catch (err) {
         console.error(err);
-        /*setError("Ошибка при загрузке существ");*/
-        setEntity([]); 
+        toast.error(`Ошибка при загрузке существ ${err}`);
       }
     };
     
@@ -166,7 +160,7 @@ const Profile = () => {
       closeCreateModal();
     } catch (err) {
       console.error(err);
-      toast.error("Ошибка при создании существа");
+      toast.error("Ошибка при создании персонажа");
     }
   };
   const handleCreateEntity = async () => {
@@ -174,10 +168,10 @@ const Profile = () => {
       const response = await apiClient.post("/create-entity/", newEntity);
       console.log("Ответ API:", response.data);
       setEntity([...entity, response.data]);
-      closeCreateModal();
+      closeCreateEModal();
     } catch (err) {
       console.error(err);
-      setError("Ошибка при создании существа");
+      toast.error("Ошибка при создании существа");
     }
   };
   
@@ -185,11 +179,11 @@ const Profile = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
   
-    // Проверяем, если поле относится к статистике персонажа
-    if (name in newCharacter.character_stats) {
+    // Если поле принадлежит статистике персонажа
+    if (Object.keys(newCharacter.character_stats).includes(name)) {
       const isNumericField = [
         "hp", "level", "mana", "intelligence", "strength",
-        "dexterity", "constitution", "wisdom", "resistance", 
+        "dexterity", "constitution", "wisdom", "resistance",
         "stability", "charisma",
       ].includes(name);
   
@@ -197,34 +191,37 @@ const Profile = () => {
         ...prev,
         character_stats: {
           ...prev.character_stats,
-          [name]: isNumericField ? Number(value) : value, // Преобразуем числовые поля
+          [name]: isNumericField ? Number(value) : value,
         },
       }));
     }
-    // Проверяем, если поле относится к статистике существа
-    else if (name in newEntity.entity_stats) {
-      const isNumericField = ["hp", "level", "resistance", "stability"].includes(name);
+    // Если изменяется имя персонажа
+    else if (name === "name" && newCharacter) {
+      setNewCharacter((prev) => ({
+        ...prev,
+        name: value,
+      }));
+    }
+    // Если изменяется имя существа
+  };
   
+  const handleEntityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+  
+    if (name === "name") {
+      // Обновляем только имя существа
+      setNewEntity((prev) => ({
+        ...prev,
+        name: value,
+      }));
+    } else if (["hp", "level", "resistance", "stability"].includes(name)) {
+      // Обновляем числовые поля статистики существа
       setNewEntity((prev) => ({
         ...prev,
         entity_stats: {
           ...prev.entity_stats,
-          [name]: isNumericField ? Number(value) : value, // Преобразуем числовые поля
+          [name]: Number(value),
         },
-      }));
-    }
-    // Если поле - это имя персонажа
-    else if (name === "name" && newCharacter) {
-      setNewCharacter((prev) => ({
-        ...prev,
-        [name]: value, // Обновляем имя персонажа
-      }));
-    }
-    // Если поле - это имя существа
-    else if (name === "name" && newEntity) {
-      setNewEntity((prev) => ({
-        ...prev,
-        [name]: value, // Обновляем имя существа
       }));
     }
   };
@@ -247,6 +244,7 @@ const Profile = () => {
       {error && <p className="error">{error}</p>}
       
       <div className="characters-list">
+        <p>Ваши персонажи</p>
         {characters.length > 0 ? (
           characters.map((character) => (
             <div
@@ -266,6 +264,7 @@ const Profile = () => {
         </button>
       </div>
       <div className="characters-list">
+        <p>Ваши существа</p>
         {entity.length > 0 ? (
           entity.map((e) => (
             <div
@@ -479,7 +478,7 @@ const Profile = () => {
                   name="name"
                   placeholder="Введите имя"
                   value={newEntity.name}
-                  onChange={handleChange}
+                  onChange={handleEntityChange}
                 />
               </label>
               <label>
@@ -489,7 +488,7 @@ const Profile = () => {
                   name="hp"
                   placeholder="Введите HP"
                   value={newEntity.entity_stats.hp}
-                  onChange={handleChange}
+                  onChange={handleEntityChange}
                 />
               </label>
               <label>
@@ -499,7 +498,7 @@ const Profile = () => {
                   name="level"
                   placeholder="Введите уровень"
                   value={newEntity.entity_stats.level}
-                  onChange={handleChange}
+                  onChange={handleEntityChange}
                 />
               </label>
               <label>
@@ -509,7 +508,7 @@ const Profile = () => {
                   name="resistance"
                   placeholder="Введите сопротивляемость"
                   value={newEntity.entity_stats.resistance}
-                  onChange={handleChange}
+                  onChange={handleEntityChange}
                 />
               </label>
               <label>
@@ -519,7 +518,7 @@ const Profile = () => {
                   name="stability"
                   placeholder="Введите устойчивость"
                   value={newEntity.entity_stats.stability}
-                  onChange={handleChange}
+                  onChange={handleEntityChange}
                 />
               </label>
             </div>

@@ -44,8 +44,9 @@ const Login: React.FC = () => {
 
   return (
     <div className="LoginBase">
+       <div id="fog"></div>
       <form className="LoginWindow" onSubmit={handleLogin}>
-        <div className="LoginText">{isRegistering ? "Регистрация" : "Войти на сайт"}</div>
+        <div className="LoginText">{isRegistering ? "Sign up for the adventurer's guild" : "Get ready for a new adventure"}</div>
         <input
           className="LoginInput"
           type="text"
@@ -77,7 +78,7 @@ const Login: React.FC = () => {
         </button>
         <button
           type="button"
-          className="RegisterBtn"
+          className="LoginBtn"
           onClick={handleRegisterClick}
         >
           {isRegistering ? "Уже есть аккаунт? Войти" : "Регистрация"}

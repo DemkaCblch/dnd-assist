@@ -31,6 +31,7 @@
     text-align: center;
     padding: 2rem;
     margin: 10px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0));
   }
   
   .title {
@@ -50,13 +51,26 @@
     gap: 2rem;
   }
   
-  .btn {
+  .btn-create-room {
     padding: 1rem 2rem;
     font-size: 1.2rem;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    background: linear-gradient(45deg, #7f0000, #ff4500); /* Градиент */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-create-room:hover{
+    transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(255, 69, 0, 0.7); /* Свечение */
   }
   
   .create-room {
@@ -110,6 +124,7 @@
     color: #e8e0e0; 
     text-align: center; 
     font-family: 'Didact Gothic';
+    max-height: 1536px;
   }
 
 

@@ -1,3 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Almendra+SC&display=swap');
+
+
+#fog {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.9));
+    pointer-events: none; /* Чтобы не мешать взаимодействию с формой */
+    z-index: 1; /* За основным контентом */
+    filter: blur(4px);
+    max-height: 1459px;
+}
+
 
 .LoginBase{
     height: calc(100vh - 60px);
@@ -16,38 +32,53 @@
 .LoginWindow{
     border-style: solid;
     border-radius: 30px;
-    border-width: 20px;
-    border-color: rgba(215, 214, 214, 0.3);
+    /*border-width: 20px;*/
+    /* border-color: rgba(215, 214, 214, 0.3); */
+    border: 2px solid rgba(255, 215, 0, 0.8);
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 10px;
-    background: radial-gradient(rgba(146, 162, 152, 0.8) 50%, rgba(149, 122, 104, 0.7));
+    color: #ffffff;
+    /*background: radial-gradient(rgba(146, 162, 152, 0.8) 50%, rgba(149, 122, 104, 0.7));*/
+    background: linear-gradient(145deg, #2c2c2c, #4b0000);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+    z-index: 2;
 }
 
 .LoginText {
-    border: none;
+    font-family: 'Almendra SC', serif;
+   /* border: none;
     border-radius: 20px;
     background: transparent;
     padding: 3px;
     font-size: 24px;
     color: #000;
-    margin-bottom: 20px; 
+    margin-bottom: 20px; */
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #ffd700; /* Золотой цвет */
+    text-shadow: 2px 2px 8px rgba(255, 215, 0, 0.8);
 }
 
 .LoginInput {
     width: 300px;
     padding: 10px;
     margin-bottom: 20px; 
-    border: none;
+    border: 2px solid #ffd700;
+    background: rgba(0, 0, 0, 0.7);
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.5); 
-    color: #333;
+    color: #ffffff;
     font-size: 16px;
     box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2); 
     outline: none;
     transition: all 0.3s ease;
 }
+
+.LoginInput::placeholder {
+    color: #bbb; /* Серебристый текст-заполнитель */
+  }
 
 .LoginInput:focus {
     background: rgba(255, 255, 255, 0.7); 
@@ -56,7 +87,7 @@
 }
 
 .LoginBtn {
-    border: none;
+    /*border: none;
     border-radius: 10px;
     background: rgba(255, 255, 255, 0.5);
     box-shadow: 0 3px 0 rgba(255, 255, 255, 0.3);
@@ -66,14 +97,40 @@
     padding: 10px;
     font-size: 18px;
     cursor: pointer;
-    margin-bottom: 10px;
+    margin-bottom: 10px;*/
+
+
+    /*font-size: 18px;
+    color: #ffffff;
+    background: linear-gradient(45deg, #7f0000, #ff0000); 
+    border: 2px solid #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    margin-bottom: 10px;*/
+
+font-size: 18px;
+  font-weight: bold;
+  color: #ffffff;
+  background: linear-gradient(45deg, #7f0000, #ff4500);
+  border: 2px solid #ffd700;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 10px;
 }
 
 .LoginBtn:hover {
-    background: rgb(30, 196, 30, 0.7);
+    /*background: rgb(30, 196, 30, 0.7);
     box-shadow: none;
     position: relative;
-    top: 5px;
+    top: 5px;*/
+    transform: scale(1.05); /* Лёгкое увеличение */
+  background: linear-gradient(45deg, #ff4500, #7f0000); /* Обратный градиент */
+  box-shadow: 0 0 15px rgba(255, 69, 0, 0.7); /* Светящийся эффект */
 }
 
 html,body{

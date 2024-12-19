@@ -292,7 +292,7 @@ const Main = () => {
         </p>
       </header>
       <div className="buttons-container">
-        <button className="btn create-room" onClick={handleCreateRoom}>
+        <button className="btn-create-room" onClick={handleCreateRoom}>
           Создать комнату
         </button>
         {/*<button className="btn join-room" onClick={handleOpenJoinModal}>
