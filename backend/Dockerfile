@@ -28,11 +28,6 @@ COPY --from=builder /usr/local/bin/ /usr/local/bin/
 # Copy only necessary project files
 COPY . .
 
-# Collect static files and clean up in single layer
-RUN python manage.py collectstatic --noinput \
-    && find . -type d -name __pycache__ -exec rm -r {} + \
-    && rm -rf /root/.cache /tmp/*
-
 EXPOSE 8000
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=5 CMD curl --fail http://localhost:8000/admin || exit 1

@@ -137,6 +137,9 @@ services:
         python backend/manage.py makemigrations room &&
         python backend/manage.py makemigrations user_profile &&
         python backend/manage.py migrate &&
+        python backend/manage.py collectstatic --no-input &&
+        find . -type d -name __pycache__ -exec rm -r {} + &&
+        rm -rf /root/.cache /tmp/* &&
         python backend/manage.py runserver 0.0.0.0:8000
       "
     ports:
