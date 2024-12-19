@@ -37,16 +37,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.modal-close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: transparent;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: #333;
-}
+
 
 .modal-content h2 {
   margin: 0 0 10px;
@@ -73,6 +64,17 @@
   transition: all 0.3s ease;
 }
 
+.modal-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #333;
+}
+
 .character-stats label {
   display: flex;
   flex-direction: column;
@@ -84,7 +86,7 @@
   padding: 8px;
   margin-top: 5px;
   font-size: 14px;
-  width: 100%;
+  width: 80%;
   border: 1px solid #ccc;
   border-radius: 4px;
 }

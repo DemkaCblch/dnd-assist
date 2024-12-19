@@ -386,18 +386,21 @@ const GameField: React.FC = () => {
     });
   };
 
-  const renderBar = (current: number, max: number, color: string) => {
+  const renderBar = (current: number, max: number, color: string, label: string) => {
     const percentage = (current / max) * 100;
     return (
-      <div className="stat-bar" style={{border: '1px solid #000', width: '100px', backgroundColor: '#eee'}}>
-        <div style={{
-          width: `${percentage}%`,
-          backgroundColor: color,
-          textAlign: 'center',
-          color: '#fff',
-          fontSize: '12px'
-        }}>
-          {current}/{max}
+      <div className="stat-bar-container">
+        <span className="stat-bar-label">{label}:</span>
+        <div className="stat-bar">
+          <div
+            style={{
+              width: `${percentage}%`,
+              backgroundColor: color,
+              textAlign: 'center',
+            }}
+          >
+            {current}/{max}
+          </div>
         </div>
       </div>
     );
@@ -489,10 +492,8 @@ const GameField: React.FC = () => {
           {players.map((player) => (
             <div key={player.id} className="player-item">
               <p><strong>{player.name}</strong></p>
-              <p>HP:</p>
-              {renderBar(player.hp, player.maxHp, 'red')}
-              <p>Mana:</p>
-              {renderBar(player.mana, player.maxMana, 'blue')}
+              {renderBar(player.hp, player.maxHp, 'red', 'HP')}
+              {renderBar(player.mana, player.maxMana, 'blue', 'Mana')}
             </div>
           ))}
         </div>
@@ -560,7 +561,9 @@ const GameField: React.FC = () => {
               })
             )}
           </div>
-          <div className="button-container">
+          
+        </div>
+        <div className="button-container">
           <button className="add-token-btn" onClick={() => setIsModalOpen(true)}>
             Добавить фигурку
           </button>
@@ -581,8 +584,6 @@ const GameField: React.FC = () => {
           </div>
         )}
         </div>
-        </div>
-        
         
         <div className="chat-panel">
           <h3>Чат</h3>

@@ -8,11 +8,12 @@ body{
 .button-container {
   display: flex; 
   justify-content: flex-start;
+  flex-direction: column;
   align-items: center; 
-  gap: 10px; 
+  gap: 5px; 
   position: absolute; 
-  right: 320px; 
-  bottom: 20px; 
+  right: 350px; 
+  top: 20px; 
   z-index: 10; 
 }
 
@@ -30,7 +31,7 @@ body{
   border-radius: 5px;
   margin-bottom: 5px;
   font-size: 14px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px rgba(215, 194, 194, 0.363);
   font-family: 'Didact Gothic';
 }
 
@@ -53,53 +54,68 @@ body{
   padding: 10px;
   text-align: center;
   border-bottom: 2px solid #ccc;
-  max-height: 12%;  
+  max-height: 180px;  
+}
+
+.turn-controls{
+  background-color: rgb(104, 124, 143);
+  border: none;
+  border-radius: 5px;
 }
 
 .player-panel h3{
-  margin-top: 10px;
-  margin-bottom: 10px;
+  max-height: 5px;
+
 }
 
 .players-list {
   display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  margin-right: 10px;
+  margin-left: 10px;
+}
+
+.players-list:first-child{
+  margin-left: 0;
 }
 
 .player-item {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid #ccc;
   border-radius: 8px;
-  padding: 10px;
   width: 200px;
   text-align: center;
   margin: 5px;
+  height: 150px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
+.stat-bar-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.stat-bar-label {
+  margin-right: 10px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
 .stat-bar {
-  height: 10px;
+  height: 20px;
+  width: 100px;
+  border: 1px solid #000;
+  background-color: #eee;
   border-radius: 5px;
   overflow: hidden;
-  margin: 5px 0;
-  background-color: #ddd;
 }
 
 .stat-bar div {
   height: 100%;
   text-align: center;
-  line-height: 10px;
   font-size: 10px;
   color: white;
-}
-
-.hp-bar {
-  background: linear-gradient(90deg, red, darkred);
-}
-
-.mana-bar {
-  background: linear-gradient(90deg, blue, darkblue);
 }
 
 /* Чат-панель */

@@ -36,7 +36,7 @@
   }
   
   .btn.start-game {
-    background-color: green;
+    background-color: rgba(131, 178, 131, 0.311);
     color: white;
     border: none;
   }

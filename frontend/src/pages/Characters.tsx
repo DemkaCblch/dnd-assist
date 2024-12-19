@@ -235,7 +235,7 @@ const Profile = () => {
       {userProfile && (
         <div className="user-info">
           <h1>Личный кабинет</h1>
-        <img src={"default-avatar.jpg"} alt="User Avatar" />
+        <img src="../../public/player.jpg" alt="User Avatar" />
         <p><strong>Имя пользователя:</strong> {userProfile.username}</p>
         <p><strong>Дата регистрации:</strong> {new Date(userProfile.date_joined).toLocaleDateString()}</p>
         </div>
