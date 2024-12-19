@@ -116,7 +116,6 @@ const Profile = () => {
         setEntity(response.data); 
       } catch (err) {
         console.error(err);
-        toast.error(`Ошибка при загрузке существ ${err}`);
       }
     };
     
