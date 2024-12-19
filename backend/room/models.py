@@ -20,8 +20,3 @@ class PlayerInRoom(models.Model):
                                   blank=True)
     websocket_channel_id = models.CharField()
     is_master = models.BooleanField(default=False)
-
-
-class Chat(models.Model):
-    id = models.AutoField(primary_key=True)
-    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='chats')
