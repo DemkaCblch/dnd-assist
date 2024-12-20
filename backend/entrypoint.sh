@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 python manage.py makemigrations room
 python manage.py makemigrations user_profile
 python manage.py migrate
